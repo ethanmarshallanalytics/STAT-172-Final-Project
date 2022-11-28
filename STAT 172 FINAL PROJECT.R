@@ -2,6 +2,8 @@
 
 #doing stuff and things
 
+# Ethan was here
+
 #reading in data sets:
 
 rm(list=ls())
