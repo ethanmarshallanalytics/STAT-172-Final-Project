@@ -1,17 +1,16 @@
 # STAT 172 Final Project
-
-#doing stuff and things
-
-# Ethan was here
-
-#reading in data sets:
-
 rm(list=ls())
+
+install.packages("dplyr")
+install.packages("tidyr")
+install.packages("lubridate")
+
 
 library(dplyr)
 library(tidyr)
 library(lubridate)
 
+#reading in data sets:
 skater_stats <-read.csv("Final_project/game_skater_stats.csv")
 player_info <-read.csv("Final_project/player_info.csv")
 
