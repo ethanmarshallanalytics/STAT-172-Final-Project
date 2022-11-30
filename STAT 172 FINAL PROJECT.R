@@ -10,14 +10,9 @@ library(dplyr)
 library(tidyr)
 library(lubridate)
 
-<<<<<<< HEAD
 skater_stats <-read.csv(choose.files(), header = T)
 player_info <-read.csv(choose.files(), header = T)
-=======
-#reading in data sets:
-skater_stats <-read.csv("Final_project/game_skater_stats.csv")
-player_info <-read.csv("Final_project/player_info.csv")
->>>>>>> 8c5975ed31cb20fef7364f1c416bc6020c733243
+
 
 #adjusting data sets to get desired columns
 skater_stats <- subset(skater_stats, select = -c(evenTimeOnIce, shortHandedTimeOnIce, powerPlayTimeOnIce))
