@@ -1,17 +1,23 @@
 # STAT 172 Final Project
 rm(list=ls())
 
-install.packages("dplyr")
-install.packages("tidyr")
-install.packages("lubridate")
+# install.packages("dplyr")
+# install.packages("tidyr")
+# install.packages("lubridate")
 
 
 library(dplyr)
 library(tidyr)
 library(lubridate)
 
+# use 'PLAYER DATA' zip file
+# game_skater_stats.csv
 skater_stats <-read.csv(choose.files(), header = T)
+# player_info.csv
 player_info <-read.csv(choose.files(), header = T)
+### NOTE: if Mac user, use this code to download data
+# skater_stats <-read.csv(file.choose(), header = T)
+# player_info <-read.csv(file.choose(), header = T)
 
 
 #adjusting data sets to get desired columns
