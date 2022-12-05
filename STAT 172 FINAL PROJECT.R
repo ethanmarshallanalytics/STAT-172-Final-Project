@@ -8,6 +8,7 @@ rm(list=ls())
 
 library(dplyr)
 library(tidyr)
+library(ggplot2)
 library(lubridate)
 
 # use 'PLAYER DATA' zip file
@@ -50,3 +51,7 @@ data <- subset(data, select = -c(goals))
 data
 nrow(data)
 str(data)
+
+# Explanatory Graph with Shots
+ggplot(data = data) +
+  geom_histogram(aes(x=shots))
