@@ -44,8 +44,7 @@ data$birthDate <- as_date(data$birthDate)
 data$age <- (2022 - year(data$birthDate))
 
 #subsetting data to get final clean and organized data set
-data <- subset(data, select = -c(birthDate))
-data <- subset(data, select = -c(powerPlayGoals, shortHandedGoals))
+data <- subset(data, select = -c(birthDate, plusMinus, powerPlayGoals, shortHandedGoals))
 data$score <- ifelse(data$goals >= 1, "Yes","No")
 data <- subset(data, select = -c(goals))
 data
