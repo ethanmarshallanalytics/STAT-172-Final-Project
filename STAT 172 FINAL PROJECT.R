@@ -11,6 +11,24 @@ library(tidyr)
 library(ggplot2)
 library(lubridate)
 
+install.packages("devtools")
+
+library(devtools)
+
+devtools::install_github("edwinth/paletti") 
+library(paletti)
+
+mycols <- c(
+  black    = "#010101",
+  white = "#FFFFFF",
+  gold   = "#FFB81C",
+  orange = "#ffd289",
+  beige = "#DDCBa4",
+  brown = "#744F28"
+  
+)
+viz_palette(mycols)
+
 # use 'PLAYER DATA' zip file
 # game_skater_stats.csv
 skater_stats <-read.csv(choose.files(), header = T)
