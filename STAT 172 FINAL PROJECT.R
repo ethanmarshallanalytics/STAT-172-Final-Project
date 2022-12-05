@@ -1,6 +1,7 @@
 # STAT 172 Final Project
 rm(list=ls())
 
+
 # install.packages("dplyr")
 # install.packages("tidyr")
 # install.packages("lubridate")
@@ -11,11 +12,12 @@ library(tidyr)
 library(ggplot2)
 library(lubridate)
 
-install.packages("devtools")
+#install.packages("devtools")
 
 library(devtools)
 
-devtools::install_github("edwinth/paletti") 
+#devtools::install_github("edwinth/paletti") 
+
 library(paletti)
 
 mycols <- c(
@@ -70,5 +72,11 @@ nrow(data)
 str(data)
 
 # Explanatory Graph with Shots
-ggplot(data = data) +
-  geom_histogram(aes(x=shots))
+avg_by_position = data %>% 
+  group_by(primaryPosition) %>%
+  summarise(avg_goal = mean(goals)) %>% ungroup
+
+ggplot() +
+  geom_col(aes(x = primaryPosition, y = avg_goal), data = avg_by_position)+
+  geom_boxplot(aes(x = primaryPosition, y = shots), data = data)
+
