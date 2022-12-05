@@ -5,21 +5,17 @@ rm(list=ls())
 # install.packages("dplyr")
 # install.packages("tidyr")
 # install.packages("lubridate")
-
+# install.packages("devtools")
+# devtools::install_github("edwinth/paletti") 
 
 library(dplyr)
 library(tidyr)
 library(ggplot2)
 library(lubridate)
-
-#install.packages("devtools")
-
 library(devtools)
-
-#devtools::install_github("edwinth/paletti") 
-
 library(paletti)
 
+# add Boston Bruins color palette
 mycols <- c(
   black    = "#010101",
   white = "#FFFFFF",
@@ -27,9 +23,8 @@ mycols <- c(
   orange = "#ffd289",
   beige = "#DDCBa4",
   brown = "#744F28"
-  
 )
-viz_palette(mycols)
+viz_palette(mycols) #view color palette
 
 # use 'PLAYER DATA' zip file
 # game_skater_stats.csv
@@ -71,6 +66,7 @@ data
 nrow(data)
 str(data)
 
+### EXPLORATORY PLOTS ----
 # Explanatory Graph with Shots
 avg_by_position = data %>% 
   group_by(primaryPosition) %>%
@@ -79,4 +75,19 @@ avg_by_position = data %>%
 ggplot() +
   geom_col(aes(x = primaryPosition, y = avg_goal), data = avg_by_position)+
   geom_boxplot(aes(x = primaryPosition, y = shots), data = data)
+
+# histogram of timeOnIce
+ggplot(data=data) +
+  geom_histogram(aes(x=timeOnIce), binwidth=75, color="#010101", fill="#FFB81C") +
+  labs(x="Time on Ice (sec)", y="Frequency") +
+  ggtitle("Distribution of Time on Ice")
+
+# histogram of nationality and goals scored
+ggplot(data=data) +
+  geom_bar(aes(x=nationality, fill=score), position="fill") +
+  labs(x="Nationality", y="Proportion") +
+  ggtitle("Proportion of Goals Scored by Nationality") +
+  scale_fill_manual(values=c("#010101", "#FFB81C"), "Goals \nScored")
+
+
 
