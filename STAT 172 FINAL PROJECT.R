@@ -40,7 +40,7 @@ player_info <-read.csv(choose.files(), header = T)
 skater_stats <- subset(skater_stats, select = -c(evenTimeOnIce, shortHandedTimeOnIce, powerPlayTimeOnIce))
 player_info <- subset(player_info, select = c(player_id, firstName, lastName, nationality, primaryPosition, birthDate, height_cm, weight, shootsCatches))
 
-skater_stats <- na.omit(skater_stats) # this might put some random attributes on column and cause problems for the random forest
+
 
 
 #merging datasets
@@ -48,13 +48,15 @@ skater_stats <- left_join(skater_stats, player_info, by="player_id")
 
 skater_stats <- na.omit(skater_stats)
 
-#reducing number of rows in data set by only selecting 
+#reducing number of rows in data set by only selecting Boston Bruins Players
 skater_stats <- filter(skater_stats, team_id == 6)
 
+#removing extra columns
 data <- subset(skater_stats, select = -c(game_id, player_id, team_id))
-data$birthDate <- substr(data$birthDate, 1,10)
+
 
 #fixing the birthDate column to age
+data$birthDate <- substr(data$birthDate, 1,10)
 data$birthDate <- as_date(data$birthDate)
 data$age <- (2022 - year(data$birthDate))
 
@@ -65,6 +67,16 @@ data <- subset(data, select = -c(goals))
 data
 nrow(data)
 str(data)
+
+#have missing data in hits, takeaways, giveaways, and blocked, imputing median for all of them
+data$hits[is.na(data$hits)] <-median(data$hits[!is.na(data$hits)])
+data$takeaways[is.na(data$takeaways)] <-median(data$takeaways[!is.na(data$takeaways)])
+data$giveaways[is.na(data$giveaways)] <-median(data$giveaways[!is.na(data$giveaways)])
+data$blocked[is.na(data$blocked)] <-median(data$blocked[!is.na(data$blocked)])
+
+
+
+
 
 ### EXPLORATORY PLOTS ----
 # Explanatory Graph with Shots
