@@ -1,7 +1,6 @@
 # STAT 172 Final Project
 rm(list=ls())
 
-
 # install.packages("dplyr")
 # install.packages("tidyr")
 # install.packages("lubridate")
@@ -39,13 +38,9 @@ skater_stats <-read.csv(file.choose(), header = T)
 # player_info.csv
 player_info <-read.csv(file.choose(), header = T)
 
-
 #adjusting data sets to get desired columns
 skater_stats <- subset(skater_stats, select = -c(evenTimeOnIce, shortHandedTimeOnIce, powerPlayTimeOnIce))
 player_info <- subset(player_info, select = c(player_id, firstName, lastName, nationality, primaryPosition, birthDate, height_cm, weight, shootsCatches))
-
-
-
 
 #merging datasets
 skater_stats <- left_join(skater_stats, player_info, by="player_id")
@@ -55,7 +50,6 @@ skater_stats <- filter(skater_stats, team_id == 6)
 
 #removing extra columns
 data <- subset(skater_stats, select = -c(game_id, player_id, team_id))
-
 
 #fixing the birthDate column to age
 data$birthDate <- substr(data$birthDate, 1,10)
@@ -79,7 +73,6 @@ data$shootsCatches[is.na(data$shootsCatches)] <- "L"
 
 summary(data)
 str(data)
-
 
 ### EXPLORATORY PLOTS ----
 # Explanatory Graph with Shots
@@ -118,8 +111,7 @@ data$shootsCatches <- as.factor(data$shootsCatches)
 data$score <- as.factor(data$score)
 str(data)
 
-
-#-------- Creating Training and testing sets and fitting the forest -----------
+#-------- CREATE TRAINING AND TESTING SETS -----------
 RNGkind(sample.kind = "default")
 set.seed(3763)
 train.idx <- sample(x=1:nrow(data), size=.7*nrow(data))
@@ -130,6 +122,7 @@ str(train.df)
 train.df <- subset(train.df, select=-c(firstName, lastName)) #remove first name and last name from train.df
 str(train.df) 
 
+#-------- FIT THE FOREST -----------
 forest1 <- randomForest(score ~ .,
                         data=train.df, #TRAINING DATA
                         ntree = 1000, #B = the number of classification trees in forest
@@ -139,7 +132,7 @@ forest1 <- randomForest(score ~ .,
 forest1 # base OOB error = 20.97%
 plot(forest1)
 
-# ---- TUNE FOREST
+# ---- TUNE FOREST -----------
 # tune mtry
 mtry <- c(1:18)
 
@@ -159,11 +152,11 @@ for(idx in 1:length(mtry)){
   keeps[idx, "m"] <- mtry[idx]   #record OOB error, corresponding mtry for each forest fit
   keeps[idx, "OOB_error_rate"] <- mean(predict(tempforest) != train.df$score)
 }
-keeps # best OOB error = 20.53% at m=3
+keeps # best OOB error = XX% at m=X
 
 # plot the OOB error rates vs m
 ggplot(data=keeps) +
-  geom_line(aes(x=m, y=OOB_error_rate))
+  geom_line(aes(x=m, y=OOB_error_rate)) # TODO: !!!!! MAKE THIS LOOK NICER !!!!!
 # best OOB error occurs at m=7
 
 # fit final forest
@@ -175,7 +168,7 @@ forest2 <- randomForest(score ~.,
                         na.action = na.roughfix)
 forest2 # OOB error = 20.58%
 
-# ---- PLOT ROC CURVE
+# ---- PLOT ROC CURVE ---------------
 # establish p-hat ... "Yes" is a positive event
 pi_hat <- predict(forest2, test.df, type="prob")[,"Yes"]
 # create curve
@@ -196,7 +189,7 @@ pi_star <- coords(rocCurve, "best", ret="threshold")$threshold[1]
 test.df$score_pred <- as.factor(ifelse(pi_hat > pi_star, "Yes", "No"))
 View(test.df)
 
-# FITTING A GLM -----
+# -------- FITTING A GLM -----
 # make a variable importance plot
 vi <- as.data.frame(varImpPlot(forest2, type = 1))
 vi$Variable <- rownames(vi)
@@ -207,6 +200,28 @@ ggplot(data = vi) +
             coord_flip() + 
             labs(x = "Variable Name", y = "Importance") +
             ggtitle("Variable Importance Plot for Predicting 'score'")
+
+# fit logistic regression
+
+# add variables to find optimum model
+
+
+# ------- CLASSIFICATION TREE ------------
+# tune a tree using the best GLM model and compare AUC to the forest
+
+
+
+
+
+
+# ------ FINAL VISUALIZATIONS --------
+# create visualizations using the most important variables
+
+
+
+
+
+
 
 
 
