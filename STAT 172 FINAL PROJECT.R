@@ -1,5 +1,5 @@
 # STAT 172 Final Project
-rm(list=ls())
+rm(list=ls()).
 
 
 # install.packages("dplyr")
@@ -83,8 +83,8 @@ avg_by_position = data %>%
   summarise(avg_goal = mean(goals)) %>% ungroup
 
 ggplot() +
-  geom_col(aes(x = primaryPosition, y = avg_goal), data = avg_by_position)+
-  geom_boxplot(aes(x = primaryPosition, y = shots), data = data)+
+  geom_col(aes(x = primaryPosition, y = avg_goal), data = avg_by_position, color = "#010101", fill = "#FFB81C")+
+  geom_boxplot(aes(x = primaryPosition, y = shots), data = data, color = "#010101", fill = "#FFB81C")+
   labs(x="Position", y="Shots/ Average Goals Scored") +
   ggtitle("Shots and Average Goals by Positiony") +
   scale_fill_manual(values=c("#010101", "#FFB81C"), "Goals \nScored")
