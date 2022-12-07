@@ -15,6 +15,13 @@ library(lubridate)
 library(devtools)
 library(paletti)
 
+library(RColorBrewer)
+library(randomForest)
+library(pROC)
+library(tidytext)
+library(reshape2)
+library(glmnet)
+
 # add Boston Bruins color palette
 mycols <- c(
   black    = "#010101",
@@ -115,7 +122,7 @@ str(data)
 
 #-------- Creating Training and testing sets and fitting the forest -----------
 RNGkind(sample.kind = "default")
-set.seed(3730)
+set.seed(3763)
 train.idx <- sample(x=1:nrow(data), size=.7*nrow(data))
 train.df <- data[train.idx, ]
 test.df <- data[-train.idx, ]
