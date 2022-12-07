@@ -5,7 +5,7 @@ rm(list=ls())
 # install.packages("dplyr")
 # install.packages("tidyr")
 # install.packages("lubridate")
-# install.packages("devtools")
+#install.packages("devtools")
 # devtools::install_github("edwinth/paletti") 
 
 library(dplyr)
@@ -86,6 +86,9 @@ avg_by_position = data %>%
 ggplot() +
   geom_col(aes(x = primaryPosition, y = avg_goal), data = avg_by_position)+
   geom_boxplot(aes(x = primaryPosition, y = shots), data = data)
+  labs(x="Position", y="Shots/ Average Goals Scored") +
+  ggtitle("Shots and Average Goals by Positiony") +
+  scale_fill_manual(values=c("#010101", "#FFB81C"), "Goals \nScored")
 
 # histogram of timeOnIce
 ggplot(data=data) +
