@@ -139,8 +139,9 @@ forest1 <- randomForest(score ~ .,
 forest1 # base OOB error = 20.97%
 plot(forest1)
 
+# ---- TUNE FOREST
 # tune mtry
-mtry <- seq(1, 18, by=3) #TO DO: FIT FOR MORE M
+mtry <- c(1:18)
 
 # empty data frame for m and oob error
 keeps <- data.frame(m=rep(NA, length(mtry)),
@@ -163,7 +164,52 @@ keeps # best OOB error = 20.53% at m=3
 # plot the OOB error rates vs m
 ggplot(data=keeps) +
   geom_line(aes(x=m, y=OOB_error_rate))
-# best OOB error occurs at m=
+# best OOB error occurs at m=7
 
 # fit final forest
+forest2 <- randomForest(score ~.,
+                        data=train.df, #TRAINING DATA
+                        ntree = 1000,
+                        mtry = 7,
+                        importance = T,
+                        na.action = na.roughfix)
+forest2 # OOB error = 20.58%
+
+# ---- PLOT ROC CURVE
+# establish p-hat ... "Yes" is a positive event
+pi_hat <- predict(forest2, test.df, type="prob")[,"Yes"]
+# create curve
+rocCurve <- roc(response = test.df$score, #supply truth (from test set)
+                predictor = pi_hat, #supply predicted PROBABILITIES of positive case
+                levels = c("No", "Yes")) #(negative, positive)
+# plot basic ROC curve
+plot(rocCurve, print.thres = TRUE, print.auc = TRUE)
+# AUC = 0.816
+# pi* = 0.132 ... we will only predict churn when P(scoring) > .132
+# Specificity = 0.676 ... When a goal isn't scored, we correctly predict that a player
+  # doesn't score 67.6% of the time.
+# Sensitivity = 0.785 ... When a goal is scored, we correctly predict that a player
+  # will score 78.5% of the time.
+
+# create a column of predicted values in the test data
+pi_star <- coords(rocCurve, "best", ret="threshold")$threshold[1]
+test.df$score_pred <- as.factor(ifelse(pi_hat > pi_star, "Yes", "No"))
+View(test.df)
+
+# FITTING A GLM -----
+# make a variable importance plot
+vi <- as.data.frame(varImpPlot(forest2, type = 1))
+vi$Variable <- rownames(vi)
+ggplot(data = vi) +
+  geom_bar(aes(x = reorder(Variable,MeanDecreaseAccuracy), 
+               weight = MeanDecreaseAccuracy), 
+            position ="identity", color = "#010101", fill="#FFB81C") + 
+            coord_flip() + 
+            labs(x = "Variable Name", y = "Importance") +
+            ggtitle("Variable Importance Plot for Predicting 'score'")
+
+
+
+
+
 
