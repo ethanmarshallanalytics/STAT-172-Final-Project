@@ -84,7 +84,7 @@ avg_by_position = data %>%
 
 ggplot() +
   geom_col(aes(x = primaryPosition, y = avg_goal), data = avg_by_position)+
-  geom_boxplot(aes(x = primaryPosition, y = shots), data = data)
+  geom_boxplot(aes(x = primaryPosition, y = shots), data = data)+
   labs(x="Position", y="Shots/ Average Goals Scored") +
   ggtitle("Shots and Average Goals by Positiony") +
   scale_fill_manual(values=c("#010101", "#FFB81C"), "Goals \nScored")
@@ -109,8 +109,16 @@ data$lastName <- as.factor(data$lastName)
 data$nationality <- as.factor(data$nationality)
 data$primaryPosition <- as.factor(data$primaryPosition)
 data$shootsCatches <- as.factor(data$shootsCatches)
-data$scores <- as.factor(data$score)
+data$score <- as.factor(data$score)
 str(data)
 
 
+#-------- Creating Training and testing sets and fitting the forest -----------
+RNGkind(sample.kind = "default")
+set.seed(3730)
+train.idx <- sample(x=1:nrow(data), size=.7*nrow(data))
+train.df <- data[train.idx, ]
+test.df <- data[-train.idx, ]
+
+str(train.df)
 
