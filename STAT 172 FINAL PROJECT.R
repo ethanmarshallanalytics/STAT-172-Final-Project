@@ -1,5 +1,5 @@
 # STAT 172 Final Project
-rm(list=ls()).
+rm(list=ls())
 
 
 # install.packages("dplyr")
@@ -35,12 +35,9 @@ viz_palette(mycols) #view color palette
 
 # use 'PLAYER DATA' zip file
 # game_skater_stats.csv
-skater_stats <-read.csv(choose.files(), header = T)
+skater_stats <-read.csv(file.choose(), header = T)
 # player_info.csv
-player_info <-read.csv(choose.files(), header = T)
-### NOTE: if Mac user, use this code to download data
-# skater_stats <-read.csv(file.choose(), header = T)
-# player_info <-read.csv(file.choose(), header = T)
+player_info <-read.csv(file.choose(), header = T)
 
 
 #adjusting data sets to get desired columns
@@ -78,6 +75,7 @@ data$hits[is.na(data$hits)] <-median(data$hits[!is.na(data$hits)])
 data$takeaways[is.na(data$takeaways)] <-median(data$takeaways[!is.na(data$takeaways)])
 data$giveaways[is.na(data$giveaways)] <-median(data$giveaways[!is.na(data$giveaways)])
 data$blocked[is.na(data$blocked)] <-median(data$blocked[!is.na(data$blocked)])
+data$shootsCatches[is.na(data$shootsCatches)] <- "L"
 
 summary(data)
 str(data)
@@ -109,6 +107,7 @@ ggplot(data=data) +
   ggtitle("Proportion of Goals Scored by Nationality") +
   scale_fill_manual(values=c("#010101", "#FFB81C"), "Goals \nScored")
 
+### FINAL CLEANING ----
 #Coverting character variables to factors to use for forest
 data <- subset(data, select = -c(goals))
 data$firstName <- as.factor(data$firstName)
@@ -128,4 +127,43 @@ train.df <- data[train.idx, ]
 test.df <- data[-train.idx, ]
 
 str(train.df)
+train.df <- subset(train.df, select=-c(firstName, lastName)) #remove first name and last name from train.df
+str(train.df) 
+
+forest1 <- randomForest(score ~ .,
+                        data=train.df, #TRAINING DATA
+                        ntree = 1000, #B = the number of classification trees in forest
+                        mtry = 4, #choose m - sqrt(18) = 4.25 approx
+                        importance = T)
+
+forest1 # base OOB error = 20.97%
+plot(forest1)
+
+# tune mtry
+mtry <- seq(1, 18, by=3) #TO DO: FIT FOR MORE M
+
+# empty data frame for m and oob error
+keeps <- data.frame(m=rep(NA, length(mtry)),
+                    OOB_error_rate = rep(NA, length(mtry)))
+
+# loop through different values of mtry
+for(idx in 1:length(mtry)){
+  print(paste0("Fitting m = ", mtry[idx]))
+  tempforest <- randomForest(score ~.,
+                             data=train.df,
+                             ntree=1000,
+                             mtry = mtry[idx], #mtry is varying
+                             na.action = na.roughfix) #impute missings! otherwise get error
+  #record iteration's m value in j'th row
+  keeps[idx, "m"] <- mtry[idx]   #record OOB error, corresponding mtry for each forest fit
+  keeps[idx, "OOB_error_rate"] <- mean(predict(tempforest) != train.df$score)
+}
+keeps # best OOB error = 20.53% at m=3
+
+# plot the OOB error rates vs m
+ggplot(data=keeps) +
+  geom_line(aes(x=m, y=OOB_error_rate))
+# best OOB error occurs at m=
+
+# fit final forest
 
