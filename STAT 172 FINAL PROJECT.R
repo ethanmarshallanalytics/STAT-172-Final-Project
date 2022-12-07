@@ -46,8 +46,6 @@ player_info <- subset(player_info, select = c(player_id, firstName, lastName, na
 #merging datasets
 skater_stats <- left_join(skater_stats, player_info, by="player_id")
 
-skater_stats <- na.omit(skater_stats)
-
 #reducing number of rows in data set by only selecting Boston Bruins Players
 skater_stats <- filter(skater_stats, team_id == 6)
 
@@ -67,6 +65,7 @@ data <- subset(data, select = -c(goals))
 data
 nrow(data)
 str(data)
+summary(data)
 
 #have missing data in hits, takeaways, giveaways, and blocked, imputing median for all of them
 data$hits[is.na(data$hits)] <-median(data$hits[!is.na(data$hits)])
@@ -74,8 +73,8 @@ data$takeaways[is.na(data$takeaways)] <-median(data$takeaways[!is.na(data$takeaw
 data$giveaways[is.na(data$giveaways)] <-median(data$giveaways[!is.na(data$giveaways)])
 data$blocked[is.na(data$blocked)] <-median(data$blocked[!is.na(data$blocked)])
 
-
-
+summary(data)
+str(data)
 
 
 ### EXPLORATORY PLOTS ----
@@ -100,6 +99,15 @@ ggplot(data=data) +
   labs(x="Nationality", y="Proportion") +
   ggtitle("Proportion of Goals Scored by Nationality") +
   scale_fill_manual(values=c("#010101", "#FFB81C"), "Goals \nScored")
+
+#Coverting character variables to factors to use for forest
+data$firstName <- as.factor(data$firstName)
+data$lastName <- as.factor(data$lastName)
+data$nationality <- as.factor(data$nationality)
+data$primaryPosition <- as.factor(data$primaryPosition)
+data$shootsCatches <- as.factor(data$shootsCatches)
+data$scores <- as.factor(data$score)
+str(data)
 
 
 
