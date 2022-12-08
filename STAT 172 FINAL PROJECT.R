@@ -210,10 +210,14 @@ ggplot(data = vi) +
 glm2 = glm(score ~ shots + timeOnIce + primaryPosition + hits + age + 
              faceOffWins + powerPlayAssists, 
             data = data, family = binomial(link = "logit"))
+
+glm3 = glm(score ~ shots + timeOnIce + primaryPosition + weight + hits + age + nationality, data=data, family = binomial(link = "logit"))
+AIC(glm3)
+
 AIC(glm2) # calculate the AIC of the model
 BIC(glm2) # calculate the BIC of the model
 summary(glm2)
-# GLM2 is the final Bernoulli model using backwards regression. 
+# GLM3 is the final Bernoulli model using backwards regression. 
 
 # ------- CLASSIFICATION TREE ------------
 # tune a tree using the best GLM model and compare AUC to the forest
