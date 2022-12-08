@@ -6,6 +6,7 @@ rm(list=ls())
 # install.packages("lubridate")
 #install.packages("devtools")
 # devtools::install_github("edwinth/paletti") 
+devtools::install_github("thomasp85/patchwork")
 
 library(dplyr)
 library(tidyr)
@@ -13,7 +14,7 @@ library(ggplot2)
 library(lubridate)
 library(devtools)
 library(paletti)
-
+library(patchwork)
 library(RColorBrewer)
 library(randomForest)
 library(pROC)
@@ -80,12 +81,17 @@ avg_by_position = data %>%
   group_by(primaryPosition) %>%
   summarise(avg_goal = mean(goals)) %>% ungroup
 
-ggplot() +
-  geom_col(aes(x = primaryPosition, y = avg_goal), data = avg_by_position, color = "#010101", fill = "#FFB81C")+
+shots <- ggplot() +
   geom_boxplot(aes(x = primaryPosition, y = shots), data = data, color = "#010101", fill = "#FFB81C")+
-  labs(x="Position", y="Shots/ Average Goals Scored") +
-  ggtitle("Shots and Average Goals by Positiony") +
-  scale_fill_manual(values=c("#010101", "#FFB81C"), "Goals \nScored")
+  labs(x="Position", y="Shots per game") +
+  ggtitle("Shots per Game by Position")
+
+goals <- ggplot() +
+  geom_col(aes(x = primaryPosition, y = avg_goal), data = avg_by_position, color = "#010101", fill = "#FFB81C")+
+  labs(x="Position", y="Average Goals Scored") +
+  ggtitle("Goals per Game by Position")
+
+shots + goals
 
 # histogram of timeOnIce
 ggplot(data=data) +
