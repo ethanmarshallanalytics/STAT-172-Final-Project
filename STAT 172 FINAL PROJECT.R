@@ -163,10 +163,10 @@ ggplot(data=keeps) +
 forest2 <- randomForest(score ~.,
                         data=train.df, #TRAINING DATA
                         ntree = 1000,
-                        mtry = 7,
+                        mtry = 5,
                         importance = T,
                         na.action = na.roughfix)
-forest2 # OOB error = 20.58%
+forest2 # OOB error = 12.92%
 
 # ---- PLOT ROC CURVE ---------------
 # establish p-hat ... "Yes" is a positive event
@@ -202,9 +202,13 @@ ggplot(data = vi) +
             ggtitle("Variable Importance Plot for Predicting 'score'")
 
 # fit logistic regression
+glm1 = glm(score ~ shots + timeOnIce + primaryPosition + hits + age + 
+             faceOffWins + powerPlayAssists, 
+            data = data, family = binomial(link = "logit"))
 
-# add variables to find optimum model
+summary(glm1)# add variables to find optimum model
 
+# GLM1 is the final bernoulli model. 
 
 # ------- CLASSIFICATION TREE ------------
 # tune a tree using the best GLM model and compare AUC to the forest
