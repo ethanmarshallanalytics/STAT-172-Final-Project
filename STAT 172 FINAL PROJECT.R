@@ -201,14 +201,19 @@ ggplot(data = vi) +
             labs(x = "Variable Name", y = "Importance") +
             ggtitle("Variable Importance Plot for Predicting 'score'")
 
+# USING VARIABLE IMPORTANCE PLOT
+# add variables to find optimum model
+
+# USING BACKWARDS REGRESSION
+
 # fit logistic regression
-glm1 = glm(score ~ shots + timeOnIce + primaryPosition + hits + age + 
+glm2 = glm(score ~ shots + timeOnIce + primaryPosition + hits + age + 
              faceOffWins + powerPlayAssists, 
             data = data, family = binomial(link = "logit"))
-
-summary(glm1)# add variables to find optimum model
-
-# GLM1 is the final bernoulli model. 
+AIC(glm2) # calculate the AIC of the model
+BIC(glm2) # calculate the BIC of the model
+summary(glm2)
+# GLM2 is the final Bernoulli model using backwards regression. 
 
 # ------- CLASSIFICATION TREE ------------
 # tune a tree using the best GLM model and compare AUC to the forest
