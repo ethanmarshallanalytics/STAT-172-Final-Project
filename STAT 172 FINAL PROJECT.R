@@ -168,7 +168,7 @@ ggplot(data=keeps) +
   geom_point(aes(x=m, y=OOB_error_rate)) +
   labs(x="m (mtry) value", y="Out of Bag error rate (OOB)") +
   theme_bw() + 
-  scale_x_continuous(n.breaks=18) +
+  scale_x_continuous(limits=c(1,18), breaks=seq(1,18,1)) +
   ylim(0.125,0.150) +
   ggtitle("Tuned Random Forest Performance Based on the Number of Predictor Variables (m)")
   
