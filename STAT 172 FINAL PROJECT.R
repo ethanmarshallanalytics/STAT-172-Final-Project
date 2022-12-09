@@ -77,7 +77,7 @@ summary(data)
 str(data)
 
 ### EXPLORATORY PLOTS ----
-# Explanatory Graph with Shots
+# Explanatory Graph with Shots and Goals
 avg_by_position = data %>% 
   group_by(primaryPosition) %>%
   summarise(avg_goal = mean(goals)) %>% ungroup
@@ -92,8 +92,7 @@ goals <- ggplot() +
   labs(x="Position", y="Average Goals Scored") +
   ggtitle("Goals per Game by Position")
 
-# plots graphs together on the same plane
-shots + goals
+shots + goals # plots graphs together on the same plane
 
 # histogram of timeOnIce
 ggplot(data=data) +
@@ -101,12 +100,12 @@ ggplot(data=data) +
   labs(x="Time on Ice (sec)", y="Frequency") +
   ggtitle("Distribution of Time on Ice")
 
-# histogram of nationality and goals scored
+# bar chart of nationality and shots taken
 ggplot(data=data) +
-  geom_bar(aes(x=nationality, fill=score), position="fill") +
-  labs(x="Nationality", y="Proportion") +
-  ggtitle("Proportion of Goals Scored by Nationality") +
-  scale_fill_manual(values=c("#010101", "#FFB81C"), "Goals \nScored")
+  geom_col(aes(x=nationality, y=shots), fill = "#744F28") +
+  labs(x="Nationality", y="Total Shots") +
+  ggtitle("Total Shots Taken by Country") +
+  scale_y_continuous(limits=c(0,30000), breaks=seq(0,30000,5000))
 
 ### FINAL CLEANING ----
 #Coverting character variables to factors to use for forest
@@ -305,6 +304,22 @@ AIC(glm2) # 22820.26
 # ------ FINAL VISUALIZATIONS --------
 # create visualizations using the most important variables
 
+# colored scatter plot of top 2 variables - shots and timeOnIce
+  # timeOnIce x-axis, shots y-axis, points colored by Score
+
+# histogram of score by age
+
+# colored scatter plot of shots, weight, and primaryPosition (maybe facet wrap?)
+  # weight on x-axis, shots on y-axis, points colored by primaryPosition
+
+# bar chart of primaryPosition and faceoffTaken
+
+# histogram of nationality and goals scored
+ggplot(data=data) +
+  geom_bar(aes(x=nationality, fill=score), position="fill") +
+  labs(x="Nationality", y="Proportion") +
+  ggtitle("Proportion of Goals Scored by Nationality") +
+  scale_fill_manual(values=c("#744F28", "#FFB81C"), "Goals \nScored")
 
 
 
