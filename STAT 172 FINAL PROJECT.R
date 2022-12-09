@@ -21,6 +21,7 @@ library(pROC)
 library(tidytext)
 library(reshape2)
 library(glmnet)
+library(MASS)
 
 # add Boston Bruins color palette
 mycols <- c(
@@ -91,6 +92,7 @@ goals <- ggplot() +
   labs(x="Position", y="Average Goals Scored") +
   ggtitle("Goals per Game by Position")
 
+# plots graphs together on the same plane
 shots + goals
 
 # histogram of timeOnIce
@@ -132,14 +134,14 @@ str(train.df)
 forest1 <- randomForest(score ~ .,
                         data=train.df, #TRAINING DATA
                         ntree = 1000, #B = the number of classification trees in forest
-                        mtry = 4, #choose m - sqrt(18) = 4.25 approx
+                        mtry = 4, #choose m: sqrt(18) = 4.25 approx
                         importance = T)
 
-forest1 # base OOB error = 20.97%
+forest1 # base OOB error = 13.01%
 plot(forest1)
 
 # ---- TUNE FOREST -----------
-# tune mtry
+# tune mtry, the number of predictor variables used in the random forest
 mtry <- c(1:18)
 
 # empty data frame for m and oob error
@@ -158,21 +160,30 @@ for(idx in 1:length(mtry)){
   keeps[idx, "m"] <- mtry[idx]   #record OOB error, corresponding mtry for each forest fit
   keeps[idx, "OOB_error_rate"] <- mean(predict(tempforest) != train.df$score)
 }
-keeps # best OOB error = XX% at m=X
+keeps # best OOB error = 12.92375% at m=5
 
 # plot the OOB error rates vs m
 ggplot(data=keeps) +
-  geom_line(aes(x=m, y=OOB_error_rate)) # TODO: !!!!! MAKE THIS LOOK NICER !!!!!
-# best OOB error occurs at m=7
+  geom_line(aes(x=m, y=OOB_error_rate)) + 
+  geom_point(aes(x=m, y=OOB_error_rate)) +
+  labs(x="m (mtry) value", y="Out of Bag error rate (OOB)") +
+  theme_bw() + 
+  scale_x_continuous(n.breaks=18) +
+  ylim(0.125,0.150) +
+  ggtitle("Tuned Random Forest Performance Based on the Number of Predictor Variables (m)")
+  
+
+# grab the best mtry value automatically
+optimal_m <- which.min(keeps[,"OOB_error_rate"])
 
 # fit final forest
 forest2 <- randomForest(score ~.,
                         data=train.df, #TRAINING DATA
                         ntree = 1000,
-                        mtry = 5,
+                        mtry = optimal_m,
                         importance = T,
                         na.action = na.roughfix)
-forest2 # OOB error = 12.92%
+forest2 # OOB error = 12.88%
 
 # ---- PLOT ROC CURVE ---------------
 # establish p-hat ... "Yes" is a positive event
@@ -183,12 +194,12 @@ rocCurve <- roc(response = test.df$score, #supply truth (from test set)
                 levels = c("No", "Yes")) #(negative, positive)
 # plot basic ROC curve
 plot(rocCurve, print.thres = TRUE, print.auc = TRUE)
-# AUC = 0.816
-# pi* = 0.132 ... we will only predict churn when P(scoring) > .132
-# Specificity = 0.676 ... When a goal isn't scored, we correctly predict that a player
-  # doesn't score 67.6% of the time.
-# Sensitivity = 0.785 ... When a goal is scored, we correctly predict that a player
-  # will score 78.5% of the time.
+# AUC = 0.817
+# pi* = 0.144 ... we will only predict a goal when P(scoring) > .144
+# Specificity = 0.704 ... When a goal isn't scored, we correctly predict that a player
+  # doesn't score 70.4% of the time.
+# Sensitivity = 0.761 ... When a goal is scored, we correctly predict that a player
+  # will score 76.1% of the time.
 
 # create a column of predicted values in the test data
 pi_star <- coords(rocCurve, "best", ret="threshold")$threshold[1]
@@ -201,37 +212,95 @@ vi <- as.data.frame(varImpPlot(forest2, type = 1))
 vi$Variable <- rownames(vi)
 ggplot(data = vi) +
   geom_bar(aes(x = reorder(Variable,MeanDecreaseAccuracy), 
-               weight = MeanDecreaseAccuracy), 
-            position ="identity", color = "#010101", fill="#FFB81C") + 
-            coord_flip() + 
-            labs(x = "Variable Name", y = "Importance") +
-            ggtitle("Variable Importance Plot for Predicting 'score'")
+              weight = MeanDecreaseAccuracy), 
+              position ="identity", color = "#010101", fill="#FFB81C") + 
+  coord_flip() + 
+  labs(x = "Variable Name", y = "Importance") +
+  ggtitle("Variable Importance Plot for Predicting 'score'")
 
-# USING VARIABLE IMPORTANCE PLOT
-# add variables to find optimum model
-
-# USING BACKWARDS REGRESSION
-
+### USING VARIABLE IMPORTANCE PLOT
+# add variables to find optimum model (forward stepwise regression)
 # fit logistic regression
-glm2 = glm(score ~ shots + timeOnIce + primaryPosition + hits + age + 
-             faceOffWins + powerPlayAssists, 
-            data = data, family = binomial(link = "logit"))
+glm1a = glm(score ~ shots + timeOnIce, 
+           data=data, family = binomial(link = "logit"))
+AIC(glm1a) # 23580.5
+BIC(glm1a) # 23605.7
 
-glm3 = glm(score ~ shots + timeOnIce + primaryPosition + weight + hits + age + nationality, data=data, family = binomial(link = "logit"))
-AIC(glm3)
 
-AIC(glm2) # calculate the AIC of the model
-BIC(glm2) # calculate the BIC of the model
+glm1b = glm(score ~ shots + timeOnIce + primaryPosition, 
+           data=data, family = binomial(link = "logit"))
+AIC(glm1b) # 22894.29
+BIC(glm1b) # 22944.67
+# best model according to BIC
+
+
+glm1c = glm(score ~ shots + timeOnIce + primaryPosition + weight, 
+           data=data, family = binomial(link = "logit"))
+AIC(glm1c) # 22891.6
+BIC(glm1c) # 22950.38 ... BIC increasing again
+
+
+glm1d = glm(score ~ shots + timeOnIce + primaryPosition + weight +
+             nationality, 
+           data=data, family = binomial(link = "logit"))
+AIC(glm1d) # 22865.45
+
+
+glm1e = glm(score ~ shots + timeOnIce + primaryPosition + weight +
+             nationality + hits, 
+           data=data, family = binomial(link = "logit"))
+AIC(glm1e) # 22853.99
+
+
+glm1f = glm(score ~ shots + timeOnIce + primaryPosition + weight + 
+             nationality + hits + age, 
+           data=data, family = binomial(link = "logit"))
+AIC(glm1f) # 22829.79
+
+
+glm1g = glm(score ~ shots + timeOnIce + primaryPosition + weight + 
+             nationality + hits + age + faceoffTaken, 
+           data=data, family = binomial(link = "logit"))
+AIC(glm1g) # 22827.8
+# best model according to AIC, we will use this as the final model
+
+
+glm1h = glm(score ~ shots + timeOnIce + primaryPosition + weight + 
+              nationality + hits + age + faceoffTaken + giveaways, 
+            data=data, family = binomial(link = "logit"))
+AIC(glm1h) # 22829.38 ... AIC increasing again
+
+# clean up model name
+glm1 = glm1g
+summary(glm1)
+
+### USING BACKWARDS REGRESSION
+# fully saturated model
+glm2 = glm(score ~ shots + timeOnIce + primaryPosition + weight + nationality +
+             hits + age + faceoffTaken + giveaways + blocked + height_cm + takeaways +
+             faceOffWins + assists + penaltyMinutes + shootsCatches + powerPlayAssists +
+             shortHandedAssists,
+           data = data, family = binomial(link = "logit"))
+
+# use stepAIC backwards regression to find the best model
+stepAIC(glm2, direction = 'backward', trace=FALSE)
+
+# model specified by stepAIC
+glm2 = glm(score ~ shots + timeOnIce + primaryPosition + weight + nationality +
+           hits + age + height_cm + faceOffWins + powerPlayAssists,
+           data=data, family = binomial(link="logit"))
 summary(glm2)
-# GLM3 is the final Bernoulli model using backwards regression. 
+AIC(glm2) # 22820.26
+# Although this model has the lowest AIC, the stepAIC function may not lead to 
+  # the best combination of predictors as it lends itself to overfitting and inconsistent results.
 
-# ------- CLASSIFICATION TREE ------------
-# tune a tree using the best GLM model and compare AUC to the forest
+# Therefore, we select GLM1, as the final Bernoulli model
+# Not only is this a more parsimonious model than GLM2, it was also built using a
+  # random forest algorithm, guaranteed to not result in overfitting and provide
+  # the most reliable results.
 
-
-
-
-
+# Final model:
+# score ~ shots + timeOnIce + primaryPosition + weight + nationality + hits + age + faceoffTaken
 
 # ------ FINAL VISUALIZATIONS --------
 # create visualizations using the most important variables
