@@ -1,81 +1,561 @@
 ---
-title: "Boston Bruins Player Analysis"
-author: "FTX Auditors"
-date: "`r.Sys.Date()"
+title: "STAT 172 Final Deliverable"
+author: "Ethan, Jack, & Nick"
+date: "`r Sys.Date()`"
 output: html_document
 ---
-rm(list=ls())
 
-install.packages("dplyr")
-install.packages("tidyr")
-install.packages("lubridate")
+```{r setup, include=FALSE}
+rm(list=ls())
+knitr::opts_chunk$set(echo = TRUE)
+
+#installing packages and getting library
+
+# install.packages("dplyr")
+# install.packages("tidyr")
+# install.packages("lubridate")
+#install.packages("devtools")
+# devtools::install_github("edwinth/paletti") 
+#devtools::install_github("thomasp85/patchwork")
+#install.packages("MASS")
 
 
 library(dplyr)
 library(tidyr)
+library(ggplot2)
 library(lubridate)
+library(devtools)
+library(paletti)
+library(patchwork)
+library(RColorBrewer)
+library(randomForest)
+library(pROC)
+library(tidytext)
+library(reshape2)
+library(glmnet)
+library(MASS)
 
-<<<<<<< HEAD
-skater_stats <-read.csv(choose.files(), header = T)
-player_info <-read.csv(choose.files(), header = T)
-=======
-  #reading in data sets:
-  skater_stats <-read.csv("Final_project/game_skater_stats.csv")
-player_info <-read.csv("Final_project/player_info.csv")
->>>>>>> 8c5975ed31cb20fef7364f1c416bc6020c733243
+```
+
+# Predicting whether or not a goal is scored for the Boston Bruins 
+
+The goal of this analysis is to evaluate the historical performance of Boston Bruins skaters. 
+
+On any team it is essential for players to know their role. A crucial role players may have on a team is goal scorer. The expectation of this player from coaches and management is that they will go out and score goals. Thus, this analysis will look at every player from the Boston Bruins and predict whether or not they score  one or more goals during a game. 
+
+If the analysis predicts they scored during a game and they do score this is reflective of the player doing their role, and if they score is predicted but they do not then the coaching staff could go back to that game to review. 
+
+This would enhance the process coaches have with regards to watching film, which can be one of their most time consuming processes. This algorithm would significantly save time and allow the staff to better use their time.
+
+## Initial Data Exploration
+The data we are using in this assignment was pulled from KAGGLE and is from two files. Skater_stats and Player_info. Each row in Skater_stats corresponds to one game for that player. Thus, players will have multiple rows and games will have multiple players. We then merge in player_info to allow for more explanatory variables.
+
+The following output is the summary and structure of the data.
+
+```{r data set up, echo=FALSE}
+mycols <- c(
+  black    = "#010101",
+  white = "#FFFFFF",
+  gold   = "#FFB81C",
+  orange = "#ffd289",
+  beige = "#DDCBa4",
+  brown = "#744F28"
+)
+
+
+# use 'PLAYER DATA' zip file
+# game_skater_stats.csv
+#skater_stats <-read.csv(file.choose(), header = T)
+# player_info.csv
+#player_info <-read.csv(file.choose(), header = T)
+
+skater_stats <-read.csv("C:/Users/jacks/OneDrive/Desktop/STAT 172/Final_project/game_skater_stats.csv")
+player_info <-read.csv("C:/Users/jacks/OneDrive/Desktop/STAT 172/Final_project/player_info.csv")
 
 #adjusting data sets to get desired columns
 skater_stats <- subset(skater_stats, select = -c(evenTimeOnIce, shortHandedTimeOnIce, powerPlayTimeOnIce))
 player_info <- subset(player_info, select = c(player_id, firstName, lastName, nationality, primaryPosition, birthDate, height_cm, weight, shootsCatches))
 
-skater_stats <- na.omit(skater_stats) # this might put some random attributes on column and cause problems for the random forest
-
-
 #merging datasets
 skater_stats <- left_join(skater_stats, player_info, by="player_id")
 
-skater_stats <- na.omit(skater_stats)
-
-#reducing number of rows in data set by only selecting 
+#reducing number of rows in data set by only selecting Boston Bruins Players
 skater_stats <- filter(skater_stats, team_id == 6)
 
+#removing extra columns
 data <- subset(skater_stats, select = -c(game_id, player_id, team_id))
-data$birthDate <- substr(data$birthDate, 1,10)
 
 #fixing the birthDate column to age
+data$birthDate <- substr(data$birthDate, 1,10)
 data$birthDate <- as_date(data$birthDate)
 data$age <- (2022 - year(data$birthDate))
 
-#subsetting data to get final clean and organized data set
-data <- subset(data, select = -c(birthDate))
-data <- subset(data, select = -c(powerPlayGoals, shortHandedGoals))
+#subsetting data to get final organized data set
+data <- subset(data, select = -c(birthDate, plusMinus, powerPlayGoals, shortHandedGoals))
 data$score <- ifelse(data$goals >= 1, "Yes","No")
-data <- subset(data, select = -c(goals))
-data
-nrow(data)
+
+
+#have missing data in hits, takeaways, giveaways, and blocked, imputing median / more occuring value for all of them
+data$hits[is.na(data$hits)] <-median(data$hits[!is.na(data$hits)])
+data$takeaways[is.na(data$takeaways)] <-median(data$takeaways[!is.na(data$takeaways)])
+data$giveaways[is.na(data$giveaways)] <-median(data$giveaways[!is.na(data$giveaways)])
+data$blocked[is.na(data$blocked)] <-median(data$blocked[!is.na(data$blocked)])
+data$shootsCatches[is.na(data$shootsCatches)] <- "L"
+
+summary(data)
 str(data)
 
-
-```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = TRUE)
 ```
 
-## R Markdown
+### Exploratory Analysis: Visuals
 
-This is an R Markdown document. Markdown is a simple formatting syntax for authoring HTML, PDF, and MS Word documents. For more details on using R Markdown see <http://rmarkdown.rstudio.com>.
+The following is box and whisker plot showing the number of shots per game by position.
 
-When you click the **Knit** button a document will be generated that includes both content as well as the output of any embedded R code chunks within the document. You can embed an R code chunk like this:
+```{r graphing shots box and whisker plot, echo=FALSE}
 
-```{r cars}
-summary(cars)
+# Explanatory Graph with Shots
+
+shots <- ggplot() +
+  geom_boxplot(aes(x = primaryPosition, y = shots), data = data, color = "#010101", fill = "#FFB81C")+
+  labs(x="Position", y="Shots per game") +
+  ggtitle("Shots per Game by Position")
+
+shots
+
+
 ```
 
-## Including Plots
+From the visual we can see that for centers (C), left wings (LW), and right wings (RW), they get more shots than defensemen. When examining the medians we see that C and RW have higher medians, thus we would expect Centers and Right wings to be scoring more goals since they are taking shots when comparing to Defensemen and Left wings.
 
-You can also embed plots, for example:
+Next lets take a look at the average goals per game by position:
 
-```{r pressure, echo=FALSE}
-plot(pressure)
+```{r graphing average goals bar chart, echo=FALSE}
+
+# Explanatory Graph with Goals
+avg_by_position = data %>% 
+  group_by(primaryPosition) %>%
+  summarise(avg_goal = mean(goals)) %>% ungroup
+
+
+goals <- ggplot() +
+  geom_col(aes(x = primaryPosition, y = avg_goal), data = avg_by_position, color = "#010101", fill = "#FFB81C")+
+  labs(x="Position", y="Average Goals Scored") +
+  ggtitle("Goals per Game by Position")
+
+
+goals
+
+
 ```
 
-Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.
+What we expected from above based off of shots is confirmed from this bar chart. We can see that centers and right wings score more goals on average than defensemen and left wings. We also see that on average right wings have the highest average goals scored per game. It also makes sense defensemen have the lowest amount as they are typically not known for scoring.
+
+Next, lets take a look at a histogram of time on ice:
+
+```{r timeOnIce histogram, echo=FALSE}
+
+# histogram of timeOnIce
+ggplot(data=data) +
+  geom_histogram(aes(x=timeOnIce), binwidth=75, color="#010101", fill="#FFB81C") +
+  labs(x="Time on Ice (sec)", y="Frequency") +
+  ggtitle("Distribution of Time on Ice")
+
+```
+
+
+
+Finally, we will examine some statistics regarding the nationality of players.
+
+```{r table of nationality, echo=FALSE}
+
+table(data$nationality)
+
+```
+
+```{r nationality and shots bar chart, echo=FALSE}
+
+# bar chart of nationality and shots taken
+avg_shots_by_pos = data %>% 
+  group_by(nationality) %>%
+  summarise(avg_shots = mean(shots)) %>% ungroup
+
+shots_by_pos <- ggplot() +
+      geom_col(aes(x = nationality, y = avg_shots), data =
+      avg_shots_by_pos, color = "#010101", fill = "#FFB81C")+
+      labs(x="Nationality", y="Average Shots Scored") +
+      ggtitle("Shots per Game by Nationality")
+  
+shots_by_pos
+
+```
+We can see from the table that some countries have many more players than others, such as the US and Canada. Then looking at the average shots by nationality, we see that the some nationalities have very low average shots such as Italy, Poland, and Sweden.
+
+
+Finally we examine the proportion of goals scored by nationality:
+
+```{r nationality and goals histrogram, echo=FALSE}
+
+# histogram of nationality and goals scored
+ggplot(data=data) +
+  geom_bar(aes(x=nationality, fill=score), position="fill") +
+  labs(x="Nationality", y="Proportion") +
+  ggtitle("Proportion of Goals Scored by Nationality") +
+  scale_fill_manual(values=c("#010101", "#FFB81C"), "Goals \nScored")
+
+```
+From the visual we can see that a higher proportion of Czech and Russian players are scorig goals. On the other hand Italian, Latvian, and Finnish players have low proportions.
+
+
+Now that we completed our exploratory analysis we went on to some final adjustments to the code. Now we will begin our analysis.
+
+
+```{r final data cleaning, echo=FALSE}
+
+### FINAL CLEANING ----
+#Coverting character variables to factors to use for forest
+data <- subset(data, select = -c(goals))
+data$firstName <- as.factor(data$firstName)
+data$lastName <- as.factor(data$lastName)
+data$nationality <- as.factor(data$nationality)
+data$primaryPosition <- as.factor(data$primaryPosition)
+data$shootsCatches <- as.factor(data$shootsCatches)
+data$score <- as.factor(data$score)
+str(data)
+
+```
+
+## Random Forest
+
+To begin creating our random forest. We must first split the data between training and testing sets,which is done below:
+
+```{r training and testing dataframe}
+
+#-------- CREATE TRAINING AND TESTING SETS -----------
+RNGkind(sample.kind = "default")
+set.seed(3763)
+train.idx <- sample(x=1:nrow(data), size=.7*nrow(data))
+train.df <- data[train.idx, ]
+test.df <- data[-train.idx, ]
+
+train.df <- subset(train.df, select=-c(firstName, lastName)) #remove first name and last name from train.df
+
+```
+
+Now that we have the training and test data, we can fit an initial random forest.
+
+```{r first forest}
+
+#-------- FIT THE FOREST -----------
+forest1 <- randomForest(score ~ .,
+                        data=train.df, #TRAINING DATA
+                        ntree = 1000, #B = the number of classification trees in forest
+                        mtry = 4, #choose m: sqrt(18) = 4.25 approx
+                        importance = T)
+
+forest1 # base OOB error = 13.01%
+
+```
+
+```{r first forest plot}
+
+plot(forest1)
+```
+
+To find the best forest we will now tune the forest. Since we have 18 predictor variables, we will run a loop to try a random forest using 1 to 18 variables.
+
+```{r forest tuning}
+
+# ---- TUNE FOREST -----------
+# tune mtry, the number of predictor variables used in the random forest
+mtry <- c(1:18)
+
+# empty data frame for m and oob error
+keeps <- data.frame(m=rep(NA, length(mtry)),
+                    OOB_error_rate = rep(NA, length(mtry)))
+
+# loop through different values of mtry
+for(idx in 1:length(mtry)){
+  print(paste0("Fitting m = ", mtry[idx]))
+  tempforest <- randomForest(score ~.,
+                             data=train.df,
+                             ntree=1000,
+                             mtry = mtry[idx], #mtry is varying
+                             na.action = na.roughfix) #impute missings! otherwise get error
+  #record iteration's m value in j'th row
+  keeps[idx, "m"] <- mtry[idx]   #record OOB error, corresponding mtry for each forest fit
+  keeps[idx, "OOB_error_rate"] <- mean(predict(tempforest) != train.df$score)
+}
+keeps # best OOB error = 12.92375% at m=5
+
+# plot the OOB error rates vs m
+ggplot(data=keeps) +
+  geom_line(aes(x=m, y=OOB_error_rate)) + 
+  geom_point(aes(x=m, y=OOB_error_rate)) +
+  labs(x="m (mtry) value", y="Out of Bag error rate (OOB)") +
+  theme_bw() + 
+  scale_x_continuous(limits=c(1,18), breaks=seq(1,18,1)) +
+  ylim(0.125,0.150) +
+  ggtitle("Tuned Random Forest Performance Based on the Number of Predictor Variables (m)")
+  
+
+# grab the best mtry value automatically
+optimal_m <- which.min(keeps[,"OOB_error_rate"])
+
+```
+
+Typically we see that the the OOB error rate is minimized when mtry is 5 or 6. Now that we know the optimal mtry for a forest we can fit our final forest.
+
+```{r final forest}
+
+# fit final forest
+forest2 <- randomForest(score ~.,
+                        data=train.df, #TRAINING DATA
+                        ntree = 1000,
+                        mtry = optimal_m,
+                        importance = T,
+                        na.action = na.roughfix)
+forest2 # OOB error = 12.88%
+
+```
+
+Now that we have obtained our final forest we can plot an ROC curve and pull various values such as specificity and sensitivity,
+
+```{r forest ROC curve}
+
+# ---- PLOT ROC CURVE ---------------
+# establish p-hat ... "Yes" is a positive event
+pi_hat <- predict(forest2, test.df, type="prob")[,"Yes"]
+# create curve
+rocCurve <- roc(response = test.df$score, #supply truth (from test set)
+                predictor = pi_hat, #supply predicted PROBABILITIES of positive case
+                levels = c("No", "Yes")) #(negative, positive)
+# plot basic ROC curve
+plot(rocCurve, print.thres = TRUE, print.auc = TRUE)
+
+
+# create a column of predicted values in the test data
+pi_star <- coords(rocCurve, "best", ret="threshold")$threshold[1]
+test.df$score_pred <- as.factor(ifelse(pi_hat > pi_star, "Yes", "No"))
+#View(test.df)
+
+```
+
+From the visual we see that the AUC is 0.817. The pi* is 0.144, therefore we will only predict a goal when the probability of scoring is greater than 0.144.
+
+We found the specificity to be 0.704, which means when a goal is not scored, we correctly predict that a player does not score 70.4% of the time.
+
+The sensitivity is 0.761. Meaning when a goal is scored, we correctly predict that a player will score 76.1% of the time.
+
+Now that we have performend a complete analysis utilizing the random forest, we will transition to using a GLM.
+
+## GLM
+
+To begin, we need to create a variable importance plot to find which predictor variables are of the most value. We can do this by using our final forest.
+
+```{r Variable Importance Plot, include=FALSE}
+
+# -------- FITTING A GLM -----
+# make a variable importance plot
+vi <- as.data.frame(varImpPlot(forest2, type = 1))
+vi$Variable <- rownames(vi)
+
+```
+
+
+```{r Variable Importance Plot Visual}
+
+ggplot(data = vi) +
+  geom_bar(aes(x = reorder(Variable,MeanDecreaseAccuracy), 
+              weight = MeanDecreaseAccuracy), 
+              position ="identity", color = "#010101", fill="#FFB81C") + 
+  coord_flip() + 
+  labs(x = "Variable Name", y = "Importance") +
+  ggtitle("Variable Importance Plot for Predicting 'score'")
+
+```
+
+From the variable importance plot we see shots, timeOnIce, primaryPosition, weight, nationality, and hits are important variables.
+
+Now that we have the plot we will be performing forward stepwise regression to find the most appropriate model. We will be using the criterion AIC and BIC. We are looking for the GLM that has the lowest values, as that signifies the best fit.
+
+```{r GLM1a, results='hide'}
+
+### USING VARIABLE IMPORTANCE PLOT
+# add variables to find optimum model (forward stepwise regression)
+# fit logistic regression
+glm1a = glm(score ~ shots + timeOnIce, 
+           data=data, family = binomial(link = "logit"))
+AIC(glm1a) # 23580.5
+BIC(glm1a) # 23605.7
+
+```
+
+```{r GLM1b, results='hide'}
+
+glm1b = glm(score ~ shots + timeOnIce + primaryPosition, 
+           data=data, family = binomial(link = "logit"))
+AIC(glm1b) # 22894.29
+BIC(glm1b) # 22944.67
+# best model according to BIC
+
+```
+
+```{r GLM1c, results='hide'}
+
+glm1c = glm(score ~ shots + timeOnIce + primaryPosition + weight, 
+           data=data, family = binomial(link = "logit"))
+AIC(glm1c) # 22891.6
+BIC(glm1c) # 22950.38 ... BIC increasing again
+
+```
+
+```{r GLM1d, results='hide'}
+
+glm1d = glm(score ~ shots + timeOnIce + primaryPosition + weight +
+             nationality, 
+           data=data, family = binomial(link = "logit"))
+AIC(glm1d) # 22865.45
+
+```
+
+```{r GLM1E, results='hide'}
+
+glm1e = glm(score ~ shots + timeOnIce + primaryPosition + weight +
+             nationality + hits, 
+           data=data, family = binomial(link = "logit"))
+AIC(glm1e) # 22853.99
+
+```
+
+```{r GLM1F, results='hide'}
+
+glm1f = glm(score ~ shots + timeOnIce + primaryPosition + weight + 
+             nationality + hits + age, 
+           data=data, family = binomial(link = "logit"))
+AIC(glm1f) # 22829.79
+
+```
+
+```{r GLM1G, results='hide'}
+
+glm1g = glm(score ~ shots + timeOnIce + primaryPosition + weight + 
+             nationality + hits + age + faceoffTaken, 
+           data=data, family = binomial(link = "logit"))
+AIC(glm1g) # 22827.8
+# best model according to AIC, we will use this as the final model
+
+```
+
+```{r GLM1H, results='hide'}
+
+glm1h = glm(score ~ shots + timeOnIce + primaryPosition + weight + 
+              nationality + hits + age + faceoffTaken + giveaways, 
+            data=data, family = binomial(link = "logit"))
+AIC(glm1h) # 22829.38 ... AIC increasing again
+
+```
+
+### Final GLM Model:
+```{r FINAL GLM}
+
+# clean up model name
+glm1 = glm1g
+summary(glm1)
+
+```
+
+To ensure the accuracy of our process we also performed backwards regression:
+
+```{r backwards regression}
+
+### USING BACKWARDS REGRESSION
+# fully saturated model
+glm2 = glm(score ~ shots + timeOnIce + primaryPosition + weight + nationality +
+             hits + age + faceoffTaken + giveaways + blocked + height_cm + takeaways +
+             faceOffWins + assists + penaltyMinutes + shootsCatches + powerPlayAssists +
+             shortHandedAssists,
+           data = data, family = binomial(link = "logit"))
+
+# use stepAIC backwards regression to find the best model
+stepAIC(glm2, direction = 'backward', trace=FALSE)
+
+# model specified by stepAIC
+glm2 = glm(score ~ shots + timeOnIce + primaryPosition + weight + nationality +
+           hits + age + height_cm + faceOffWins + powerPlayAssists,
+           data=data, family = binomial(link="logit"))
+summary(glm2)
+AIC(glm2) # 22820.26
+
+
+```
+Although this model has the lowest AIC, the stepAIC function may not lead to the best combination of predictors as it lends itself to overfitting and inconsistent results. Therefore, we select GLM1, as the final Bernoulli model. 
+
+Not only is this a more parsimonious model than GLM2, it was also built using a random forest algorithm, guaranteed to not result in overfitting and provide the most reliable results.
+
+
+Thus we end up with our final model which is:
+
+$$\text{Random Component}: \text{score}_i \sim Bernoulli (\pi_i)$$
+
+$\text{Systematic Component}:$
+$$\text{Link Function}: g(\pi_i) = \eta_i = \log\left( \dfrac{\pi_i}{1-\pi_i}  \right)$$
+$$\begin{align} \text{Linear Predictor}: \eta_i = \beta_0 &+ \beta_1 (\text{shots}) + \beta_2 (\text{timeOnIce}) + \beta_3 (\text{primaryPosition}) \\ &+ \beta_4(\text{weight}) + \beta_5(\text{nationality}) + \beta_6(\text{hits}) + \beta_7(\text{age}) + \beta_8(\text{faceoffTaken}) \end{align}$$
+
+
+## Conclusion
+
+Now that we have identified our final model and the most valuable variables, we can perform some post analysis visualizations:
+
+```{r shots and time on ice, echo=FALSE}
+
+# colored scatter plot of top 2 variables - shots and timeOnIce
+  # timeOnIce x-axis, shots y-axis, points colored by Score
+ggplot(data = data) +
+  geom_point(aes(x = timeOnIce, y = shots, color = primaryPosition)) +
+  geom_jitter(aes(x = timeOnIce, y= shots, color = primaryPosition), alpha = I(0.7)) +
+  labs(x = "Time On Ice", y = "Shots")+
+  ggtitle("Shots by Position Player Time On Ice") +
+  scale_color_manual(values=c("#744F28", "#FFB81C", "#DDCBa4","#FFFFFF"), "Position")
+
+
+```
+
+```{r hist of score by age, echo=FALSE}
+
+# histogram of score by age
+ggplot(data = data) +
+  geom_bar(aes(x = age, fill = score), position = "identity") +
+  labs(x = "Age", y = "Frequency")+
+  ggtitle("Goals scored by Age") +
+  scale_fill_manual(values=c("#744F28", "#FFB81C"), "Goals \nScored")
+
+```
+
+```{r position and faceoffs, echo=FALSE}
+
+# bar chart of primaryPosition and faceoffTaken
+options(scipen = 999)
+ggplot(data=data) +
+  geom_col(aes(x=primaryPosition, y=faceoffTaken), fill="#744F28") +
+  labs(x="Position", y="Number of Face Offs Taken") + 
+  ggtitle("Total Face Offs Taken by Position") +
+  scale_y_continuous(limits=c(0,100000), breaks=seq(0,100000,20000))
+
+```
+
+
+
+```{r nationality and scored hist, echo=FALSE}
+
+# histogram of nationality and goals scored
+ggplot(data=data) +
+  geom_bar(aes(x=nationality, fill=score), position="fill") +
+  labs(x="Nationality", y="Proportion") +
+  ggtitle("Proportion of Goals Scored by Nationality") +
+  scale_fill_manual(values=c("#744F28", "#FFB81C"), "Goals \nScored")
+
+```
+
+# Final Remarks
+
+blah
