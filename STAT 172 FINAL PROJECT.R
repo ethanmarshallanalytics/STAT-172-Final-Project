@@ -308,11 +308,13 @@ AIC(glm2) # 22820.26
   # timeOnIce x-axis, shots y-axis, points colored by Score
 
 # histogram of score by age
-ggplot(data, aes(x=age, fill=score, color=score)) +
-  geom_histogram(position="identity")+
-  labs(x="Age (Years)", y="Frequency") +
-  ggtitle("Histogram of Scoring by Age") +
-  scale_fill_manual(values=c("#744F28", "#FFB81C"))
+
+ggplot(data = data) +
+  geom_bar(aes(x = age, fill = score), position = "identity") +
+  labs(x = "Age", y = "Frequency")+
+  ggtitle("Goals scored by Age") +
+  scale_fill_manual(values=c("#744F28", "#FFB81C"), "Goals \nScored")
+
 # colored scatter plot of shots, weight, and primaryPosition (maybe facet wrap?)
   # weight on x-axis, shots on y-axis, points colored by primaryPosition
 
