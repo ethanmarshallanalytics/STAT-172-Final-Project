@@ -306,8 +306,14 @@ AIC(glm2) # 22820.26
 
 # colored scatter plot of top 2 variables - shots and timeOnIce
   # timeOnIce x-axis, shots y-axis, points colored by Score
-
+ggplot(data = data) +
+  geom_point(aes(x = timeOnIce, y = shots, color = primaryPosition)) +
+  geom_jitter(aes(x = timeOnIce, y= shots, color = primaryPosition), alpha = I(0.7)) +
+  labs(x = "Time On Ice", y = "Shots")+
+  ggtitle("Shots by Position Player Time On Ice") +
+  scale_color_manual(values=c("#744F28", "#FFB81C", "#DDCBa4","#FFFFFF"))
 # histogram of score by age
+
 ggplot(data = data) +
   geom_bar(aes(x = age, fill = score), position = "identity") +
   labs(x = "Age", y = "Frequency")+
@@ -318,12 +324,6 @@ ggplot(data = data) +
   # weight on x-axis, shots on y-axis, points colored by primaryPosition
 
 # bar chart of primaryPosition and faceoffTaken
-options(scipen = 999)
-ggplot(data=data) +
-  geom_col(aes(x=primaryPosition, y=faceoffTaken), fill="#744F28") +
-  labs(x="Position", y="Number of Face Offs Taken") + 
-  ggtitle("Total Face Offs Taken by Position") +
-  scale_y_continuous(limits=c(0,100000), breaks=seq(0,100000,20000))
 
 # histogram of nationality and goals scored
 ggplot(data=data) +
