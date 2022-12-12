@@ -305,7 +305,7 @@ AIC(glm2) # 22820.26
 # create visualizations using the most important variables
 
 # colored scatter plot of top 2 variables - shots and timeOnIce
-  # timeOnIce x-axis, shots y-axis, points colored by Score
+  # timeOnIce x-axis, shots y-axis, points colored by Position
 ggplot(data = data) +
   geom_point(aes(x = timeOnIce, y = shots, color = primaryPosition)) +
   geom_jitter(aes(x = timeOnIce, y= shots, color = primaryPosition), alpha = I(0.7)) +
