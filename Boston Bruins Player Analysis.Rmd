@@ -41,14 +41,14 @@ library(MASS)
 
 The goal of this analysis is to evaluate the historical performance of Boston Bruins skaters. 
 
-On any team it is essential for players to know their role. A crucial role players may have on a team is goal scorer. The expectation of this player from coaches and management is that they will go out and score goals. Thus, this analysis will look at every player from the Boston Bruins and predict whether or not they score  one or more goals during a game. 
+On any team it is essential for players to know their role. An example of this are goal scorers, who are expected by coaches and teammates to have consistent offensive performance and propel the team to more victories. Thus, this analysis will look at every player from the Boston Bruins to identify and predict whether or not a player will score one or more goals during a game. 
 
-If the analysis predicts they scored during a game and they do score this is reflective of the player doing their role, and if they score is predicted but they do not then the coaching staff could go back to that game to review. 
+If the analysis accurately predicts a player scoring a goal, this is reflective of the player doing their role. However, if the algorithm predicted that the player should have scored, but doesn't, this provides an opportunity for coaches to reevaluate game film and make adjustments to the player's practice regimen. 
 
-This would enhance the process coaches have with regards to watching film, which can be one of their most time consuming processes. This algorithm would significantly save time and allow the staff to better use their time.
+Ultimately, this will enhance the film review process for coaches, which can be one of their most time consuming processes. This algorithm would significantly save time and allow the staff to be more efficient in practice.
 
 ## Initial Data Exploration
-The data we are using in this assignment was pulled from KAGGLE and is from two files. Skater_stats and Player_info. Each row in Skater_stats corresponds to one game for that player. Thus, players will have multiple rows and games will have multiple players. We then merge in player_info to allow for more explanatory variables.
+The data we are using in this assignment was pulled from KAGGLE and utilizes two files: Skater_stats and Player_info. Each row in Skater_stats corresponds to one game for that player. Thus, players will have multiple rows and games will have multiple players. We then merge in player_info to allow for more explanatory variables.
 
 The following output is the summary and structure of the data.
 
@@ -109,7 +109,7 @@ str(data)
 
 ### Exploratory Analysis: Visuals
 
-The following is box and whisker plot showing the number of shots per game by position.
+The following visual is box and whisker plot showing the number of shots per game by position.
 
 ```{r graphing shots box and whisker plot, echo=FALSE}
 
@@ -125,9 +125,9 @@ shots
 
 ```
 
-From the visual we can see that for centers (C), left wings (LW), and right wings (RW), they get more shots than defensemen. When examining the medians we see that C and RW have higher medians, thus we would expect Centers and Right wings to be scoring more goals since they are taking shots when comparing to Defensemen and Left wings.
+From the visual we can see that for Centers (C), Left Wings (LW), and Right Wings (RW) take more shots than Defensemen. When examining the medians we see that C and RW have higher medians, thus we would expect Centers and Right Wings to be scoring more goals since they are taking more shots compared to Defensemen and Left Wings.
 
-Next lets take a look at the average goals per game by position:
+Next, let's look at the average goals per game by position:
 
 ```{r graphing average goals bar chart, echo=FALSE}
 
@@ -148,9 +148,9 @@ goals
 
 ```
 
-What we expected from above based off of shots is confirmed from this bar chart. We can see that centers and right wings score more goals on average than defensemen and left wings. We also see that on average right wings have the highest average goals scored per game. It also makes sense defensemen have the lowest amount as they are typically not known for scoring.
+This chart confirms out hypoethesis from the box plot. We can see that Centers and Right Wings score more goals on average than Defensemen and Left wings. In addition, Right Wings will score the most amount of goals per game on average. It is logical that Defensemen have the fewest amount as they are not known for scoring.
 
-Next, lets take a look at a histogram of time on ice:
+Next, let's take a look at a histogram of time on ice:
 
 ```{r timeOnIce histogram, echo=FALSE}
 
@@ -187,8 +187,9 @@ shots_by_pos <- ggplot() +
   
 shots_by_pos
 
-```
-We can see from the table that some countries have many more players than others, such as the US and Canada. Then looking at the average shots by nationality, we see that the some nationalities have very low average shots such as Italy, Poland, and Sweden.
+```  
+We can see from the table that some countries have many more players than others, such as the US and Canada. This table coincides with the following bar chart, as countries with the fewest players will typically take the fewest amount of shots (Italy, Poland, and Finland), and vice versa (Canada, Slovakia, and USA). Germany (DEU) is an outlier from these visuals, as they have one of the fewest number of players (753), while taking the most shots per game on average (2.13).  
+
 
 
 Finally we examine the proportion of goals scored by nationality:
@@ -202,11 +203,11 @@ ggplot(data=data) +
   ggtitle("Proportion of Goals Scored by Nationality") +
   scale_fill_manual(values=c("#010101", "#FFB81C"), "Goals \nScored")
 
-```
-From the visual we can see that a higher proportion of Czech and Russian players are scorig goals. On the other hand Italian, Latvian, and Finnish players have low proportions.
+```  
+From this visual we can see that a higher proportion of Czech Republic and Russian players are scoring the most goals. On the other hand Italian, Latvian, and Finnish players have the lowest proportions.  
 
 
-Now that we completed our exploratory analysis we went on to some final adjustments to the code. Now we will begin our analysis.
+After completing our exploratory analysis, we made some final adjustment to the code before beginning our random forest analysis.  
 
 
 ```{r final data cleaning, echo=FALSE}
@@ -226,7 +227,7 @@ str(data)
 
 ## Random Forest
 
-To begin creating our random forest. We must first split the data between training and testing sets,which is done below:
+To begin creating our random forest. We must first split the data between training and testing sets. 70% of the data was used for training, while the remaining 30% was used for testing. These splits are described below:
 
 ```{r training and testing dataframe}
 
@@ -241,7 +242,7 @@ train.df <- subset(train.df, select=-c(firstName, lastName)) #remove first name 
 
 ```
 
-Now that we have the training and test data, we can fit an initial random forest.
+Now that we have established our training and testing data, we can fit an initial random forest.
 
 ```{r first forest}
 
@@ -261,7 +262,7 @@ forest1 # base OOB error = 13.01%
 plot(forest1)
 ```
 
-To find the best forest we will now tune the forest. Since we have 18 predictor variables, we will run a loop to try a random forest using 1 to 18 variables.
+To find the best forest, we tuned the number of explanatory variables used in each decision tree, also known as mtry. Since we have 18 predictor variables, we ran a loop to build a random forest using anywhere from 1 to 18 variables.  
 
 ```{r forest tuning}
 
@@ -303,7 +304,7 @@ optimal_m <- which.min(keeps[,"OOB_error_rate"])
 
 ```
 
-Typically we see that the the OOB error rate is minimized when mtry is 5 or 6. Now that we know the optimal mtry for a forest we can fit our final forest.
+Typically, we found the OOB error rate to be minimized when mtry is 5 or 6. This is logical given that the generally accepted value for mtry is the square root of the number of explanatory variables in the dataset, which would be 4.24 for our analysis. Now that we know the optimal value for mtry, we could fit a final forest.  
 
 ```{r final forest}
 
@@ -318,7 +319,7 @@ forest2 # OOB error = 12.88%
 
 ```
 
-Now that we have obtained our final forest we can plot an ROC curve and pull various values such as specificity and sensitivity,
+From our final forest we could plot an ROC curve to pull other important metrics such as pi*, specificity, and sensitivity.  
 
 ```{r forest ROC curve}
 
@@ -342,15 +343,15 @@ test.df$score_pred <- as.factor(ifelse(pi_hat > pi_star, "Yes", "No"))
 
 From the visual we see that the AUC is 0.817. The pi* is 0.144, therefore we will only predict a goal when the probability of scoring is greater than 0.144.
 
-We found the specificity to be 0.704, which means when a goal is not scored, we correctly predict that a player does not score 70.4% of the time.
+We found the specificity to be 0.704, which means that when a goal is not scored, we correctly predict that a player does not score 70.4% of the time.
 
-The sensitivity is 0.761. Meaning when a goal is scored, we correctly predict that a player will score 76.1% of the time.
+The sensitivity is 0.761, meaning that when a goal is scored, we correctly predict that a player will score 76.1% of the time.
 
-Now that we have performend a complete analysis utilizing the random forest, we will transition to using a GLM.
+Now that we have performed a complete analysis utilizing the random forest, we will transition to using a GLM for greater interpretability.
 
 ## GLM
 
-To begin, we need to create a variable importance plot to find which predictor variables are of the most value. We can do this by using our final forest.
+To begin, we need to create a variable importance plot to determine which predictor variables provide the most value. This was calculated when running our final forest.
 
 ```{r Variable Importance Plot, include=FALSE}
 
@@ -370,13 +371,13 @@ ggplot(data = vi) +
               position ="identity", color = "#010101", fill="#FFB81C") + 
   coord_flip() + 
   labs(x = "Variable Name", y = "Importance") +
-  ggtitle("Variable Importance Plot for Predicting 'score'")
+  ggtitle("Variable Importance Plot for Predicting 'score'")  
 
 ```
 
-From the variable importance plot we see shots, timeOnIce, primaryPosition, weight, nationality, and hits are important variables.
+From the variable importance plot we see `shots` and `timeOnIce` are our important variables.  
 
-Now that we have the plot we will be performing forward stepwise regression to find the most appropriate model. We will be using the criterion AIC and BIC. We are looking for the GLM that has the lowest values, as that signifies the best fit.
+Using this plot we can perform a forward stepwise regression to find the best model using AIC and BIC. The GLM that minimizes each of these values will signify the best fit. Each of these models will use a Bernoulli random component with a logit link given the binary nature of response variable. This final model can then be used to reliably predict the probability of a player scoring 1 or more goals in their next game.  
 
 ```{r GLM1a, results='hide'}
 
@@ -464,7 +465,7 @@ summary(glm1)
 
 ```
 
-To ensure the accuracy of our process we also performed backwards regression:
+To ensure the accuracy of our process we also performed a backwards regression:
 
 ```{r backwards regression}
 
@@ -490,7 +491,7 @@ AIC(glm2) # 22820.26
 ```
 Although this model has the lowest AIC, the stepAIC function may not lead to the best combination of predictors as it lends itself to overfitting and inconsistent results. Therefore, we select GLM1, as the final Bernoulli model. 
 
-Not only is this a more parsimonious model than GLM2, it was also built using a random forest algorithm, guaranteed to not result in overfitting and provide the most reliable results.
+Not only is this a more parsimonious model than GLM2, it was also built using a random forest algorithm, which is guaranteed to not overfit and provide the most reliable results.  
 
 
 Thus we end up with our final model which is:
@@ -500,11 +501,14 @@ $$\text{Random Component}: \text{score}_i \sim Bernoulli (\pi_i)$$
 $\text{Systematic Component}:$
 $$\text{Link Function}: g(\pi_i) = \eta_i = \log\left( \dfrac{\pi_i}{1-\pi_i}  \right)$$
 $$\begin{align} \text{Linear Predictor}: \eta_i = \beta_0 &+ \beta_1 (\text{shots}) + \beta_2 (\text{timeOnIce}) + \beta_3 (\text{primaryPosition}) \\ &+ \beta_4(\text{weight}) + \beta_5(\text{nationality}) + \beta_6(\text{hits}) + \beta_7(\text{age}) + \beta_8(\text{faceoffTaken}) \end{align}$$
+$$\begin{align} \eta_i = -2.723 &+ 0.4823(\text{shots}) + 0.0006238(\text{timeOnIce}) - 0.9205(\text{isDefenseman}) \\ &+ 0.2633(\text{isLeftWing}) + 0.3246(\text{isRightWing}) + 0.00007159(\text{weight}) \\ &+ 0.001016(\text{isCZE}) + 0.02479(\text{isDEU}) - 0.2233(\text{isFIN}) - 0.1091(\text{isITA}) \\ &- 0.1176(\text{isLVA}) - 0.1332(\text{isPOL}) + 0.1793(\text{isRUS}) + 0.1566(\text{isSVK}) \\ &- 0.1783(\text{isSWE}) - 0.2402(\text{isUSA}) - 0.06965(\text{hits}) - 0.01478(\text{age}) \\ &+ 0.006905(\text{faceoffTaken}) \end{align}$$
+In our final model, Centers for primary position and Canada (CAN) for nationality are our baseline reference variables. 
 
+**Add confidence intervals and interpretations
 
 ## Conclusion
 
-Now that we have identified our final model and the most valuable variables, we can perform some post analysis visualizations:
+Now that we have identified our final model and the most valuable variables, we can perform some post-analysis visualizations:
 
 ```{r shots and time on ice, echo=FALSE}
 
