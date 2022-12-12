@@ -21,6 +21,15 @@ summary(cars)
 
 ## Including Plots
 
+Thus we end up with our final model which is:
+
+$$\text{Random Component}: \text{score}_i \sim Bernoulli (\pi_i)$$
+
+$\text{Systematic Component}:$
+$$\text{link function}: g(\pi_i) = \eta_i = \log\left( \dfrac{\pi_i}{1-\pi_i}  \right)$$
+$$\begin{align} \text{linear predictor}: \eta_i = \beta_0 &+ \beta_1 (\text{shots}) + \beta_2 (\text{timeOnIce}) + \beta_3 (\text{primaryPosition}) \\ &+ \beta_4(\text{weight}) + \beta_5(\text{nationality}) + \beta_6(\text{hits}) + \beta_7(\text{age}) + \beta_8(\text{faceoffTaken}) \end{align}$$
+
+
 You can also embed plots, for example:
 
 ```{r pressure, echo=FALSE}

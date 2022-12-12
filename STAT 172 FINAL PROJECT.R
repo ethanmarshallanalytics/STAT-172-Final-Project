@@ -101,11 +101,24 @@ ggplot(data=data) +
   ggtitle("Distribution of Time on Ice")
 
 # bar chart of nationality and shots taken
+avg_shots_by_pos = data %>% 
+  group_by(nationality) %>%
+  summarise(avg_shots = mean(shots)) %>% ungroup
+
+shots_by_pos <- ggplot() +
+  geom_col(aes(x = nationality, y = avg_shots), data =
+             avg_shots_by_pos, color = "#010101", fill = "#FFB81C")+
+  labs(x="Nationality", y="Average Shots Scored") +
+  ggtitle("Shots per Game by Nationality")
+
+shots_by_pos
+
+# histogram of nationality and goals scored
 ggplot(data=data) +
-  geom_col(aes(x=nationality, y=shots), fill = "#744F28") +
-  labs(x="Nationality", y="Total Shots") +
-  ggtitle("Total Shots Taken by Country") +
-  scale_y_continuous(limits=c(0,30000), breaks=seq(0,30000,5000))
+  geom_bar(aes(x=nationality, fill=score), position="fill") +
+  labs(x="Nationality", y="Proportion") +
+  ggtitle("Proportion of Goals Scored by Nationality") +
+  scale_fill_manual(values=c("#010101", "#FFB81C"), "Goals \nScored")
 
 ### FINAL CLEANING ----
 #Coverting character variables to factors to use for forest
@@ -327,6 +340,7 @@ ggplot(data=data) +
   labs(x="Position", y="Number of Face Offs Taken") + 
   ggtitle("Total Face Offs Taken by Position") +
   scale_y_continuous(limits=c(0,100000), breaks=seq(0,100000,20000))
+
 
 # histogram of nationality and goals scored
 ggplot(data=data) +
