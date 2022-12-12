@@ -312,16 +312,13 @@ ggplot(data = data) +
   labs(x = "Time On Ice", y = "Shots")+
   ggtitle("Shots by Position Player Time On Ice") +
   scale_color_manual(values=c("#744F28", "#FFB81C", "#DDCBa4","#FFFFFF"))
-# histogram of score by age
 
+# histogram of score by age
 ggplot(data = data) +
   geom_bar(aes(x = age, fill = score), position = "identity") +
   labs(x = "Age", y = "Frequency")+
   ggtitle("Goals scored by Age") +
   scale_fill_manual(values=c("#744F28", "#FFB81C"), "Goals \nScored")
-
-# colored scatter plot of shots, weight, and primaryPosition (maybe facet wrap?)
-  # weight on x-axis, shots on y-axis, points colored by primaryPosition
 
 # bar chart of primaryPosition and faceoffTaken
 options(scipen = 999)
