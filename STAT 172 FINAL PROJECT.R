@@ -311,7 +311,7 @@ ggplot(data = data) +
   geom_jitter(aes(x = timeOnIce, y= shots, color = primaryPosition), alpha = I(0.7)) +
   labs(x = "Time On Ice", y = "Shots")+
   ggtitle("Shots by Position Player Time On Ice") +
-  scale_color_manual(values=c("#744F28", "#FFB81C", "#DDCBa4","#FFFFFF"))
+  scale_color_manual(values=c("#744F28", "#FFB81C", "#DDCBa4","#FFFFFF"), "Position")
 
 # histogram of score by age
 ggplot(data = data) +
