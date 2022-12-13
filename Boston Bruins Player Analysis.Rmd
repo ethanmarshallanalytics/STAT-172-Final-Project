@@ -186,6 +186,7 @@ shots_by_pos <- ggplot() +
 shots_by_pos
 
 ```  
+
 We can see from the table that some countries have many more players than others, such as the US and Canada. This table coincides with the following bar chart, as countries with the fewest players will typically take the fewest amount of shots (Italy, Poland, and Finland), and vice versa (Canada, Slovakia, and USA). Germany (DEU) is an outlier from these visuals, as they have one of the fewest number of players (753), while taking the most shots per game on average (2.13).  
 
 
@@ -540,7 +541,7 @@ exp(confint)
 
 ### Predictions
 
-Now that we have performed some post-analysis visualization, we can create some predictions based off of our final GLM.
+Now we can create some predictions based off of our final GLM.
 
 For example we can perform a prediction on David Pastrnak, who has been a great player for Boston for the current Season. The following are David's variables from a recent game against the Arizona Coyotes that are needed for this model:
 
@@ -559,7 +560,9 @@ Inputting these in the model we get:
 
 $$\begin{align} \log \left( \dfrac{\pi_i}{1-\pi_i} \right) = -2.723 &+ 0.4823(9) + 0.0006238(1,336) - 0.9205(0) \\ &+ 0.2633(0) + 0.3246(1) + 0.00007159(195) \\ &+ 0.001016(1) + 0.02479(0) - 0.2233(0) - 0.1091(0) \\ &- 0.1176(0) - 0.1332(0) + 0.1793(0) + 0.1566(0) \\ &- 0.1783(0) - 0.2402(0) - 0.06965(0) - 0.01478(26) \\ &+ 0.006905(0) \end{align}$$
 
-Thus we get: $  \dfrac{\pi_i}{1-\pi_i} = e^{2.40639285} = 11.09$
+Thus we get: 
+
+$$\dfrac{\pi_i}{1-\pi_i} = e^{2.40639285} = 11.09$$
 
 This means that the odds that David Pastrnak scores a goal in the game are 11.09. The probability that David scores is:
 
@@ -641,10 +644,10 @@ ggplot(data=data) +
 
 # Final Remarks
 
-From the model and visual we can have some important takeaways that can benefit the Boston Bruin's coaching staff. From the model we see that the number of shots taken and time on ice are two important predictors for whether or not a player scores. Thus, we recommend coaches give their best players opportunities to take more shots and get them on the ice more to increase the chances. Furthermore, from the GLM we see that in the past certain positions such as forwards tend to score more and nationalities like Slovakian and  Russian lead to a higher probability. It interesting to note as well that hits decreases the likelihood of goals. This is due to higher hitting players usually not being goal scorers, thus, a goal scorer is less likely to hit other players.
+From the model and visual we can have some important takeaways that can benefit the Boston Bruin's coaching staff. From the model we see that the number of shots taken and time on ice are two important predictors for whether or not a player scores. Thus, we recommend coaches give their best players opportunities to take more shots and get them on the ice more to increase the chances. Furthermore, from the GLM we see that in the past, certain positions such as forwards tend to score more and nationalities like Slovakian and  Russian lead to a higher probability. It interesting to note as well that hits decreases the likelihood of goals. This is due to higher hitting players usually not being goal scorers, thus, a goal scorer is less likely to hit other players.
 
 From the variable importance plot it was interesting to see that takeaways and the hand a player shoots does not matter. Takeaways means that the player took the puck away from another player. We suspected that this would have been a more important variable. We also see that ShootsCatches, is not very important via the variable importance plot.
 
 From the final visuals we see that in the first visual plotting shots and time, and coloring by positions, there are many defensemen who have a lot of time on ice, and a few forwards as well. Furthermore, for those taking a lot of shots, it is almost all forwards. This aligns with what we have interpreted from the GLM. When looking at goals scored by age, we see a larger proportion is scored at younger ages. This makes sense as typically younger players are the great goal scorers. Then for reference to the class we wanted to just make everyone aware of the face offs taken by position. One of the main roles for those playing center is to take face offs. The wings only take face offs when the center is kicked out of the face off. Finally we showed the proportion of goals scored by nationality. What we can see is that some nationalities like Czech and Russian have a higher proportion of goals scored, meaning these players are more likely to be goal scorers.
 
-Future exploration could involve looking at interaction terms, and trying to quantify team chemistry and the players a goal-scorer is playing with can either help or hurt their performance. Furthermore, quantifying the opposing team to get more specific results could improve the accuracy of this analysis.
+Future exploration could involve looking at interaction terms, and trying to quantify team chemistry as the players a goal-scorer is playing with can either help or hurt their performance. Furthermore, quantifying the opposing team to get more specific results could improve the accuracy of this analysis.
