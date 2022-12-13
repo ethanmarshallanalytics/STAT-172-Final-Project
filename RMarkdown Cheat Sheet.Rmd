@@ -9,76 +9,20 @@ output: html_document
 knitr::opts_chunk$set(echo = TRUE)
 ```
 
-## R Markdown
+### Predictions
 
-This is an R Markdown document. Markdown is a simple formatting syntax for authoring HTML, PDF, and MS Word documents. For more details on using R Markdown see <http://rmarkdown.rstudio.com>.
+Now that we have performed some post-analysis visualization, we can create some predictions based off of our final GLM.
 
-When you click the **Knit** button a document will be generated that includes both content as well as the output of any embedded R code chunks within the document. You can embed an R code chunk like this:
+For example we can perform a prediction on David Pastrnak, who has been a great player for Boston for the current Season. The following are David's varaibles that are needed for this model:
 
-```{r cars}
-summary(cars)
-```
-
-## Including Plots
-
-Thus we end up with our final model which is:
-
-$$\text{Random Component}: \text{score}_i \sim Bernoulli (\pi_i)$$
-
-$\text{Systematic Component}:$
-$$\text{link function}: g(\pi_i) = \eta_i = \log\left( \dfrac{\pi_i}{1-\pi_i}  \right)$$
-$$\begin{align} \text{linear predictor}: \eta_i = \beta_0 &+ \beta_1 (\text{shots}) + \beta_2 (\text{timeOnIce}) + \beta_3 (\text{primaryPosition}) \\ &+ \beta_4(\text{weight}) + \beta_5(\text{nationality}) + \beta_6(\text{hits}) + \beta_7(\text{age}) + \beta_8(\text{faceoffTaken}) \end{align}$$
-
-
-You can also embed plots, for example:
-
-```{r pressure, echo=FALSE}
-plot(pressure)
-```
-
-Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.
-
-# __TEXT CHEAT SHEET__  
-
-# Header 1
-## Header 2
-### Header 3
-#### Header 4
-##### Header 5
-###### Header 6  
-
-Plain text
-End a line with two spaces to start a new paragraph.  
-*italics* and _italics_  
-**bold** and __bold__  
-Note: Underlining is not possible. I guess computers r dumb and think it's a link.  
-superscript^2^  
-~~strikethrough~~  
-[link](www.rstudio.com)  
-
-endash: --  
-emdash: ---  
-ellipsis: ...  
-inline equation: $A = \pi*r^{2}$  
-image: ![](path/to/smallorb.png)  
-
-> block quote  
-
-* unordered list  
-* item 2  
-+ sub-item 1  
-+ sub-item 2  
-
-1. ordered list  
-2. item 2  
-+ sub-item 1  
-+ sub-item 2   
-  
-Table Header | Second Header
-------------- | -------------
-Table Cell | Cell 2
-Cell 3 | Cell 4
-
-Two plus two equals `r 2+2`  
-Peek this sexy data `r str(data)`
+| Variable | Value |
+| :---: | :---: |
+| Shots | 9 |
+| timeOnIce | 1,336 sec |
+| PrimaryPosition | RW |
+| Weight | 195 |
+| Nationality | Czech |
+| Hits |  0 |
+| Age | 26 |
+| FaceoffTaken | 0 |
 
