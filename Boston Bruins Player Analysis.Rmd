@@ -65,12 +65,9 @@ mycols <- c(
 
 # use 'PLAYER DATA' zip file
 # game_skater_stats.csv
-#skater_stats <-read.csv(file.choose(), header = T)
+skater_stats <-read.csv(file.choose(), header = T)
 # player_info.csv
-#player_info <-read.csv(file.choose(), header = T)
-
-skater_stats <-read.csv("C:/Users/jacks/OneDrive/Desktop/STAT 172/Final_project/game_skater_stats.csv")
-player_info <-read.csv("C:/Users/jacks/OneDrive/Desktop/STAT 172/Final_project/player_info.csv")
+player_info <-read.csv(file.choose(), header = T)
 
 #adjusting data sets to get desired columns
 skater_stats <- subset(skater_stats, select = -c(evenTimeOnIce, shortHandedTimeOnIce, powerPlayTimeOnIce))
@@ -501,9 +498,24 @@ $$\text{Random Component}: \text{score}_i \sim Bernoulli (\pi_i)$$
 $\text{Systematic Component}:$
 $$\text{Link Function}: g(\pi_i) = \eta_i = \log\left( \dfrac{\pi_i}{1-\pi_i}  \right)$$
 $$\begin{align} \text{Linear Predictor}: \eta_i = \beta_0 &+ \beta_1 (\text{shots}) + \beta_2 (\text{timeOnIce}) + \beta_3 (\text{primaryPosition}) \\ &+ \beta_4(\text{weight}) + \beta_5(\text{nationality}) + \beta_6(\text{hits}) + \beta_7(\text{age}) + \beta_8(\text{faceoffTaken}) \end{align}$$
+```{r FINAL GLM coefficients}
+# coefficients of each variable
+betas <- coef(glm1)
+betas
+```
+
 $$\begin{align} \eta_i = -2.723 &+ 0.4823(\text{shots}) + 0.0006238(\text{timeOnIce}) - 0.9205(\text{isDefenseman}) \\ &+ 0.2633(\text{isLeftWing}) + 0.3246(\text{isRightWing}) + 0.00007159(\text{weight}) \\ &+ 0.001016(\text{isCZE}) + 0.02479(\text{isDEU}) - 0.2233(\text{isFIN}) - 0.1091(\text{isITA}) \\ &- 0.1176(\text{isLVA}) - 0.1332(\text{isPOL}) + 0.1793(\text{isRUS}) + 0.1566(\text{isSVK}) \\ &- 0.1783(\text{isSWE}) - 0.2402(\text{isUSA}) - 0.06965(\text{hits}) - 0.01478(\text{age}) \\ &+ 0.006905(\text{faceoffTaken}) \end{align}$$
 In our final model, Centers for primary position and Canada (CAN) for nationality are our baseline reference variables. 
+```{r FINAL GLM exponentiated variables}
+# exponentiated coefficients for interpretations
+exp(betas)
+```  
 
+```{r FINAL GLM confidence intervals, warning=FALSE}
+# 95% confidence intervals of each variable
+confint <- confint(glm1)
+exp(confint)
+```
 **Add confidence intervals and interpretations
 
 ## Conclusion
