@@ -6,7 +6,7 @@ rm(list=ls())
 # install.packages("lubridate")
 #install.packages("devtools")
 # devtools::install_github("edwinth/paletti") 
-devtools::install_github("thomasp85/patchwork")
+#devtools::install_github("thomasp85/patchwork")
 
 library(dplyr)
 library(tidyr)
