@@ -43,12 +43,12 @@ The goal of this analysis is to evaluate the historical performance of Boston Br
 
 On any team it is essential for players to know their role. An example of this are goal scorers, who are expected by coaches and teammates to have consistent offensive performance and propel the team to more victories. Thus, this analysis will look at every player from the Boston Bruins to identify and predict whether or not a player will score one or more goals during a game. 
 
-If the analysis accurately predicts a player scoring a goal, this is reflective of the player doing their role. However, if the algorithm predicted that the player should have scored, but doesn't, this provides an opportunity for coaches to reevaluate game film and make adjustments to the player's practice regimen. 
+If the analysis accurately predicts a player scoring a goal, this will be reflective of the player doing their role. However, if the algorithm predicts that a player should have scored, and doesn't, this provides an opportunity for coaches to reevaluate game film and make adjustments to the player's practice regimen. 
 
-Ultimately, this will enhance the film review process for coaches, which can be one of their most time consuming processes. This algorithm would significantly save time and allow the staff to be more efficient in practice.
+Ultimately, this will enhance the film review process for coaches, which can be one of their most time consuming processes in game preparation. This algorithm would significantly reduce this time and allow the staff to be more efficient in practice.
 
 ## Initial Data Exploration
-The data we are using in this assignment was pulled from KAGGLE and utilizes two files: Skater_stats and Player_info. Each row in Skater_stats corresponds to one game for that player. Thus, players will have multiple rows and games will have multiple players. We then merge in player_info to allow for more explanatory variables.
+The data we used in this assignment was pulled from KAGGLE and utilizes two files: Skater_stats and Player_info. Each row in Skater_stats corresponds to one game for one player. Thus, players had games and games had multiple players. We then merged in player_info to allow for more explanatory variables.
 
 The following output is the summary and structure of the data.
 
@@ -68,7 +68,6 @@ mycols <- c(
 skater_stats <-read.csv(file.choose(), header = T)
 # player_info.csv
 player_info <-read.csv(file.choose(), header = T)
-
 
 #adjusting data sets to get desired columns
 skater_stats <- subset(skater_stats, select = -c(evenTimeOnIce, shortHandedTimeOnIce, powerPlayTimeOnIce))
@@ -187,7 +186,7 @@ shots_by_pos
 
 ```  
 
-We can see from the table that some countries have many more players than others, such as the US and Canada. This table coincides with the following bar chart, as countries with the fewest players will typically take the fewest amount of shots (Italy, Poland, and Finland), and vice versa (Canada, Slovakia, and USA). Germany (DEU) is an outlier from these visuals, as they have one of the fewest number of players (753), while taking the most shots per game on average (2.13).  
+We can see from the table that some countries have many more players than others, such as the United States and Canada. This table coincides with the following bar chart, as countries with the fewest players will typically take the fewest amount of shots (Italy, Poland, and Finland), and vice versa (Canada, Slovakia, and USA). Germany (DEU) is an outlier from these visuals, as they have one of the fewest number of players (753), while taking the most shots per game on average (2.13).  
 
 
 
@@ -226,7 +225,7 @@ str(data)
 
 ## Random Forest
 
-To begin creating our random forest. We must first split the data between training and testing sets. 70% of the data was used for training, while the remaining 30% was used for testing. These splits are described below:
+To begin creating our random forest. We first split the data between training and testing sets. 70% of the data was used for training, while the remaining 30% was used for testing. These splits are described below:
 
 ```{r training and testing dataframe}
 
@@ -261,7 +260,7 @@ forest1 # base OOB error = 13.01%
 plot(forest1)
 ```
 
-To find the best forest, we tuned the number of explanatory variables used in each decision tree, also known as mtry. Since we have 18 predictor variables, we ran a loop to build a random forest using anywhere from 1 to 18 variables.  
+To find the best forest, we tuned the number of explanatory variables used in each decision tree, also known as mtry. Since this dataset had 18 predictor variables, we ran a loop to build a random forest using anywhere from 1 to 18 variables.  
 
 ```{r forest tuning}
 
@@ -303,7 +302,7 @@ optimal_m <- which.min(keeps[,"OOB_error_rate"])
 
 ```
 
-Typically, we found the OOB error rate to be minimized when mtry is 5 or 6. This is logical given that the generally accepted value for mtry is the square root of the number of explanatory variables in the dataset, which would be 4.24 for our analysis. Now that we know the optimal value for mtry, we could fit a final forest.  
+Typically, we found the OOB error rate to be minimized when mtry was 5 or 6. This was logical given that the generally accepted value for mtry is the square root of the number of explanatory variables in the dataset, which would theoretically be 4.24. Now that we know the optimal value for mtry, we fit a final forest.  
 
 ```{r final forest}
 
@@ -352,7 +351,7 @@ Now that we have performed a complete analysis utilizing the random forest, we w
 
 ## GLM
 
-To begin, we need to create a variable importance plot to determine which predictor variables provide the most value. This was calculated when running our final forest.
+To begin, we need to create a variable importance plot to determine which predictor variables provide the most value. This was initially calculated when compiling our final forest.
 
 ```{r Variable Importance Plot, include=FALSE}
 
@@ -376,9 +375,9 @@ ggplot(data = vi) +
 
 ```
 
-From the variable importance plot we see `shots` and `timeOnIce` are our important variables.  
+From the variable importance plot we see that `shots` and `timeOnIce` were our important variables.  
 
-Using this plot we can perform a forward stepwise regression to find the best model using AIC and BIC. The GLM that minimizes each of these values will signify the best fit. Each of these models will use a Bernoulli random component with a logit link given the binary nature of response variable. This final model can then be used to reliably predict the probability of a player scoring 1 or more goals in their next game.  
+Using this plot we can then perform a forward stepwise regression to find the best model by AIC and BIC criterion. The GLM that minimizes each of these values will signify the best fit. Each of these models will use a Bernoulli random component with a logit link given the binary nature of our response variable. This final model can then be used to reliably predict the probability of a player scoring one or more goals in their next game.  
 
 ```{r GLM1a, results='hide'}
 
@@ -490,26 +489,26 @@ AIC(glm2) # 22820.26
 
 
 ```
-Although this model has the lowest AIC, the stepAIC function may not lead to the best combination of predictors as it lends itself to overfitting and inconsistent results. Therefore, we select GLM1, as the final Bernoulli model. 
+Although this model has the lowest AIC, the stepAIC function may not lead to the best combination of predictors as it lends itself to overfitting and inconsistent results. Therefore, we select GLM1 as the final Bernoulli model. 
 
 Not only is this a more parsimonious model than GLM2, it was also built using a random forest algorithm, which is guaranteed to not overfit and provide the most reliable results.  
 
 
-Thus we end up with our final model which is:
+Thus we define our final model as the following:
 
 $$\text{Random Component}: \text{score}_i \sim Bernoulli (\pi_i)$$
 
 $\text{Systematic Component}:$
 $$\text{Link Function}: g(\pi_i) = \eta_i = \log\left( \dfrac{\pi_i}{1-\pi_i}  \right)$$
-$$\begin{align} \text{Linear Predictor}:\eta_i = \beta_0 &+ \beta_1(\text{shots}) + \beta_2(\text{timeOnIce}) + \beta_3(\text{isDefenseman}) \\ &+ \beta_4(\text{isLeftWing}) + \beta_5(\text{isRightWing}) + \beta_6(\text{weight}) \\ &+ \beta_7(\text{isCZE}) + \beta_8(\text{isDEU}) + \beta_9(\text{isFIN}) + \beta_{10}(\text{isITA}) \\ &+ \beta_{11}(\text{isLVA}) + \beta_{12}(\text{isPOL}) + \beta_{13}(\text{isRUS}) + \beta_{14}(\text{isSVK}) \\ &+\beta_{15}(\text{isSWE}) +\beta_{16}(\text{isUSA}) + \beta_{17}(\text{hits}) +\beta_{18}(\text{age}) \\ &+ \beta_{19}(\text{faceoffTaken}) \end{align}$$
+$$\begin{align} \text{Linear Predictor}:\eta_i = \beta_0 &+ \beta_1(\text{shots}) + \beta_2(\text{timeOnIce}) + \beta_3(\text{primaryPositionD}) \\ &+ \beta_4(\text{primaryPositionLW}) + \beta_5(\text{primaryPositionRW}) + \beta_6(\text{weight}) \\ &+ \beta_7(\text{nationalityCZE}) + \beta_8(\text{nationalityDEU}) + \beta_9(\text{nationalityFIN}) \\ &+ \beta_{10}(\text{nationalityITA}) + \beta_{11}(\text{nationalityLVA}) + \beta_{12}(\text{nationalityPOL}) \\ &+ \beta_{13}(\text{nationalityRUS}) + \beta_{14}(\text{nationalitySVK}) +\beta_{15}(\text{nationalitySWE}) \\ &+\beta_{16}(\text{nationalityUSA}) + \beta_{17}(\text{hits}) +\beta_{18}(\text{age}) + \beta_{19}(\text{faceoffTaken}) \end{align}$$
 ```{r FINAL GLM coefficients}
 # coefficients of each variable
 betas <- coef(glm1)
 betas
 ```
 
-$$\begin{align} \eta_i = -2.723 &+ 0.4823(\text{shots}) + 0.0006238(\text{timeOnIce}) - 0.9205(\text{isDefenseman}) \\ &+ 0.2633(\text{isLeftWing}) + 0.3246(\text{isRightWing}) + 0.00007159(\text{weight}) \\ &+ 0.001016(\text{isCZE}) + 0.02479(\text{isDEU}) - 0.2233(\text{isFIN}) - 0.1091(\text{isITA}) \\ &- 0.1176(\text{isLVA}) - 0.1332(\text{isPOL}) + 0.1793(\text{isRUS}) + 0.1566(\text{isSVK}) \\ &- 0.1783(\text{isSWE}) - 0.2402(\text{isUSA}) - 0.06965(\text{hits}) - 0.01478(\text{age}) \\ &+ 0.006905(\text{faceoffTaken}) \end{align}$$
-In our final model, Centers for primary position and Canada (CAN) for nationality are our baseline reference variables. 
+$$\begin{align} \eta_i = -2.723 &+ 0.4823(\text{shots}) + 0.0006238(\text{timeOnIce}) - 0.9205(\text{primaryPositionD}) \\ &+ 0.2633(\text{primaryPositionLW}) + 0.3246(\text{primaryPositionRW}) + 0.00007159(\text{weight}) \\ &+ 0.001016(\text{nationalityCZE}) + 0.02479(\text{nationalityDEU}) - 0.2233(\text{nationalityFIN}) \\ &- 0.1091(\text{nationalityITA}) - 0.1176(\text{nationalityLVA}) - 0.1332(\text{nationalityPOL}) \\ &+ 0.1793(\text{nationalityRUS}) + 0.1566(\text{nationalitySVK}) - 0.1783(\text{nationalitySWE}) \\ &- 0.2402(\text{nationalityUSA}) - 0.06965(\text{hits}) - 0.01478(\text{age}) + 0.006905(\text{faceoffTaken}) \end{align}$$
+In our final model, Centers for `primaryPosition` and Canada (CAN) for `nationality` were our baseline reference variables.   
 ```{r FINAL GLM exponentiated variables}
 # exponentiated coefficients for interpretations
 exp(betas)
@@ -517,16 +516,16 @@ exp(betas)
 
 Looking at the exponentiated coefficients we can make a few interpretations:
 
-Exponentiated coefficient for shots: 1.619792
-- Holding all other factors constant, the odds of scoring increase by a factor of 1.619792 for every additional shot taken. 
+Exponentiated coefficient for `shots`: 1.619792
+- Holding all other factors constant, the odds of scoring increase by a factor of 1.619792 for every additional shot taken, or roughly 62%. 
 
-Exponentiated coefficient for USA: 0.7864956
-- Holding all other factors constant, the odds of a U.S. player scoring are 0.7864956 times the odds of a Canadien player scoring.
+Exponentiated coefficient for `nationalityUSA`: 0.7864956
+- Holding all other factors constant, the odds of a U.S. player scoring are 0.7864956 times the odds of a Canadien player scoring, or roughly 79%.
 
-coefficient for RW: 0.3245554
-coefficient for D: -0.9205181
+coefficient for `primaryPositionRW`: 0.3245554
+coefficient for `primaryPositionD`: -0.9205181
 
-Holding all other factors constant, the odds that right wing scores are $e^{0.3245554-(-0.9205181)}=3.473$ times the odds that a defensemen scores. We can also interpret this as the odds for right wing are almost 350% larger than the odds for a defensemen.
+Holding all other factors constant, the odds that a right wing scores are $e^{0.3245554-(-0.9205181)}=3.473$ times the odds of a defensemen scoring. Thus, the odds of a right wing scoring are almost 350% larger than the odds of a defensemen.
 
 
 ```{r FINAL GLM confidence intervals, warning=FALSE}
@@ -534,16 +533,20 @@ Holding all other factors constant, the odds that right wing scores are $e^{0.32
 confint <- confint(glm1)
 exp(confint)
 ```
+  
+Exponentiated 95% confidence interval for `shots`: 1.5853 - 1.6553
+Holding all other factors constant, we are 95% confident that the true multiplicative change in odds of a player scoring a goal for each additional shot are in the range (1.5853, 1.6553). In other words, for each additional shot the player takes, we expect there to a 58.53-65.53% increase in the odds that they score a goal.
 
-**Add confidence intervals and interpretations
+Exponentiated 95% confidence interval for `nationalityUSA`: 0.71659 - 0.86282
+Holding all other factors constant, we are 95% confident that the true multiplicative change in odds of a United States player scoring a goal compared to that of a Canadian player are in the range (0.71659, 0.86282). In other words, the odds of an American player scoring are roughly 71.659-86.282% of that of a Canadian player.
 
 ## Conclusion
 
 ### Predictions
 
-Now we can create some predictions based off of our final GLM.
+Now we can create some predictions based off our final GLM.
 
-For example we can perform a prediction on David Pastrnak, who has been a great player for Boston for the current Season. The following are David's variables from a recent game against the Arizona Coyotes that are needed for this model:
+For example we can perform a prediction on David Pastrnak, who has been a great player for Boston this season. The following are some variables from a game against the Arizona Coyotes that are relevant to this model:
 
 | Variable | Value |
 | :---: | :---: |
@@ -556,7 +559,7 @@ For example we can perform a prediction on David Pastrnak, who has been a great 
 | Age | 26 |
 | FaceoffTaken | 0 |
 
-Inputting these in the model we get:
+Inputting these into the model we get:
 
 $$\begin{align} \log \left( \dfrac{\pi_i}{1-\pi_i} \right) = -2.723 &+ 0.4823(9) + 0.0006238(1,336) - 0.9205(0) \\ &+ 0.2633(0) + 0.3246(1) + 0.00007159(195) \\ &+ 0.001016(1) + 0.02479(0) - 0.2233(0) - 0.1091(0) \\ &- 0.1176(0) - 0.1332(0) + 0.1793(0) + 0.1566(0) \\ &- 0.1783(0) - 0.2402(0) - 0.06965(0) - 0.01478(26) \\ &+ 0.006905(0) \end{align}$$
 
@@ -564,11 +567,11 @@ Thus we get:
 
 $$\dfrac{\pi_i}{1-\pi_i} = e^{2.40639285} = 11.09$$
 
-This means that the odds that David Pastrnak scores a goal in the game are 11.09. The probability that David scores is:
+This means that the odds David Pastrnak scores a goal in the game are 11.09. The probability that Pastrnak scores is:
 
 $$\dfrac{e^{2.40639285}}{1+e^{2.40639285}} = 91.73 \%$$
 
-Since one variable that a Coach can control is time on ice, what would be the amount of time David needs to play to have a 75% chance of scoring a goal given some preset values of the following:
+Since one variable that a Coach can control is `timeOnIce`, what would be the amount of time that David Pastrnak needs to play to have at least a 75% chance of scoring a goal? Given some preset values, we can determine the following:
 
 | Variable | Value |
 | :---: | :---: |
@@ -581,14 +584,14 @@ Since one variable that a Coach can control is time on ice, what would be the am
 | Age | 26 |
 | FaceoffTaken | 1 (may take 1 or 2 faceoffs a game) |
 
-$$\begin{align} \log \left( \dfrac{0.75}{1-0.75} \right) = -2.723 &+ 0.4823(6) + 0.0006238(\text{timeOnIce}) - 0.9205(0) \\ &+ 0.2633(0) + 0.3246(1) + 0.00007159(195) \\ &+ 0.001016(1) + 0.02479(0) - 0.2233(0) - 0.1091(0) \\ &- 0.1176(0) - 0.1332(0) + 0.1793(0) + 0.1566(0) \\ &- 0.1783(0) - 0.2402(0) - 0.06965(0) - 0.01478(26) \\ &+ 0.006905(1) \end{align}$$
-$$\begin{align} 1.098612289 &= 0.0006238(\text{timeOnIce}) +0.13300105 \\ \text{timeOnIce} &= 1547.95 \text{ secs} \end{align}$$
+$$\begin{align} \log \left( \dfrac{0.75}{1-0.75} \right) < -2.723 &+ 0.4823(6) + 0.0006238(\text{timeOnIce}) - 0.9205(0) \\ &+ 0.2633(0) + 0.3246(1) + 0.00007159(195) \\ &+ 0.001016(1) + 0.02479(0) - 0.2233(0) - 0.1091(0) \\ &- 0.1176(0) - 0.1332(0) + 0.1793(0) + 0.1566(0) \\ &- 0.1783(0) - 0.2402(0) - 0.06965(0) - 0.01478(26) \\ &+ 0.006905(1) \end{align}$$
+$$\begin{align} 1.098612289 &< 0.0006238(\text{timeOnIce}) +0.13300105 \\ \text{timeOnIce} &> 1547.95 \text{ secs} = 25 \text{ minutes and } 48 \text{ seconds} \end{align}$$
 
-Thus, David would need to be playing 25 to 26 minutes to have a 75% probability of scoring.
+Thus, Pastrnak would need to be playing at least 25 to 26 minutes to have a 75% probability of scoring. Given that a regulation NHL hockey game consists of three 20-minute periods, he would need to be playing for nearly half of the game.  
 
 ### Visualizations
 
-Now that we have identified our final model and the most valuable variables, we can perform some post-analysis visualizations:
+Now that we have identified our final model and the most valuable variables, we can perform some post-analysis visualizations:  
 
 ```{r shots and time on ice, echo=FALSE}
 
@@ -642,12 +645,12 @@ ggplot(data=data) +
 
 
 
-# Final Remarks
+# Final Remarks  
 
-From the model and visual we can have some important takeaways that can benefit the Boston Bruin's coaching staff. From the model we see that the number of shots taken and time on ice are two important predictors for whether or not a player scores. Thus, we recommend coaches give their best players opportunities to take more shots and get them on the ice more to increase the chances. Furthermore, from the GLM we see that in the past, certain positions such as forwards tend to score more and nationalities like Slovakian and  Russian lead to a higher probability. It interesting to note as well that hits decreases the likelihood of goals. This is due to higher hitting players usually not being goal scorers, thus, a goal scorer is less likely to hit other players.
+Based on our final model and comprehensive visuals there are several important takeaways that could benefit the Boston Bruin's coaching staff. From our general linear model (GLM) we saw that the number of shots taken and time on ice are two important predictors for determining whether a player scores. Thus, we recommend coaches give their best players more opportunities to take shots and play them more frequently. Furthermore, from the GLM we saw that in the past, certain positions such as forwards tended to score more. Additionally, nationalities like Slovakia and Russia lead to a higher probability of scoring. It is also interesting to note that hits decreases the likelihood of goals due to higher hitting players usually not being good scorers.  
 
-From the variable importance plot it was interesting to see that takeaways and the hand a player shoots does not matter. Takeaways means that the player took the puck away from another player. We suspected that this would have been a more important variable. We also see that ShootsCatches, is not very important via the variable importance plot.
+From the variable importance plot we could see that takeaways (players stealing the puck from opponents) and the handedness of a player did not matter. Initially, we suspected that these variables would have been more important predictors.   
 
-From the final visuals we see that in the first visual plotting shots and time, and coloring by positions, there are many defensemen who have a lot of time on ice, and a few forwards as well. Furthermore, for those taking a lot of shots, it is almost all forwards. This aligns with what we have interpreted from the GLM. When looking at goals scored by age, we see a larger proportion is scored at younger ages. This makes sense as typically younger players are the great goal scorers. Then for reference to the class we wanted to just make everyone aware of the face offs taken by position. One of the main roles for those playing center is to take face offs. The wings only take face offs when the center is kicked out of the face off. Finally we showed the proportion of goals scored by nationality. What we can see is that some nationalities like Czech and Russian have a higher proportion of goals scored, meaning these players are more likely to be goal scorers.
+In our visual plotting shots against time and coloring by position, there were many defensemen who had a lot of time on ice along with a few forwards. Furthermore, for those taking a lot of shots, it was almost all forwards. This aligns with what we interpreted from the GLM. When looking at goals scored by age, we saw a larger proportion were scored by younger ages. This makes sense as younger players are typically more athletic and better goal scorers. Finally, for the client's awareness, we wanted to display the number of face offs taken by position. Centers clearly take the majority of face offs for the team, which is logical given the position's primary responsibilities. The only time a center would not participate in a face off is if they were in the penalty box, in which a wingman would replace their spot. Finally we showed the proportion of goals scored by nationality. Most notably, Czech and Russian players had a higher proportion of goals scored compared to the United States or Canada who make up the majority of the team.  
 
-Future exploration could involve looking at interaction terms, and trying to quantify team chemistry as the players a goal-scorer is playing with can either help or hurt their performance. Furthermore, quantifying the opposing team to get more specific results could improve the accuracy of this analysis.
+Future exploration could involve looking at interaction terms, and trying to quantify team chemistry as goal-scorers could either help or hinder the team's performance. Furthermore, quantifying the opposing team to get more specific game-by-game results could improve the accuracy of this analysis.
