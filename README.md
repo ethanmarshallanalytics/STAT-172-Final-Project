@@ -36,7 +36,7 @@ Steps in the Data:
 To examine the code and work please see the file named: Boston Bruins Player Analysis.Rmd or click the link to the RMarkdown.
 
 Random Forest Outcome:
-We built two Random Forest models. Our first model was untuned and our second model was tuned. After analyzing 22,950 Boston Bruins players games attached below are some stats.
+We built two Random Forest models; one untuned and one tuned. After analyzing 22,950 Boston Bruins datapoints of invidiual performance, here are some statistics.
 
 Forest 1 (Untuned):
 Accuracy: 86.9%
