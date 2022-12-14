@@ -33,6 +33,8 @@ Steps in the Data:
 6) Build Bernoulli Distribution Model
 7) Build Visualizations to Analyze Results
 
+To examine the code and work please see the file named: Boston Bruins Player Analysis.Rmd or click the link to the RMarkdown.
+
 Random Forest Outcome:
 We built two Random Forest models. Our first model was untuned and our second model was tuned. After analyzing 22,950 Boston Bruins players games attached below are some stats.
 
