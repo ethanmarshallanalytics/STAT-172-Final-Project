@@ -4,7 +4,7 @@ Title: Boston Bruins Player Analysis
 
 Authors: Ethan Marshall, Nick Pittman, Jack Schwartz
 
-Description: The datasets we analyzed came from Kaggle (datasource down below). We took individual player game data and combined this dataset with a player information dataset. The goal of the analysis is to determine whether or not a hockey player scores in a game. Can we build a model that can accurately predict if a player can score in a particular game?
+Description: The datasets analyzed came from Kaggle (datasource down below). By combining individual game data with a player information dataset, the goal of this analysis was to determine whether or not a hockey player will score in a game. Can we build a parsimonious model using modern statistical techniques to accurately predict this information?
 
 Programming Language: R-Studio
 
