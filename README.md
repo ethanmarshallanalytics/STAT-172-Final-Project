@@ -50,7 +50,7 @@ Sensitiity: 76.1%
 Specificity: 70.4%
 False Positive %: 29.6%  
 
-Forest 1 does a great job at accuractly predicting a player will not score a goal, however it does a very poor job of accuratley predicting a player scoring a goal. Accuracy is relatively high, but with a large dataset and scoring a goal in hockey being difficult, it is extremely easy to predict a player not scoring. This causes our Accuracy metric to be partially biased. Forest 2 does a better job with accuracy, and actually predicting a player scoring a goal. Specificity is significantly lower, but the model is performing better!
+Forest 1 does a great job at accuractly predicting when a player will not score a goal, however it does a very poor job when a players actually score a goal. Accuracy is relatively high, but given the large dataset and hockey's tendency to be very low scoring, it is extremely easy to predict a player not scoring. This causes our Accuracy metric to be partially biased. Forest 2 does a better job with accuracy, paticularly when players truly score a goal. Specificity is significantly lower, but the model is performing better!
 
 
 Link to data: https://www.kaggle.com/datasets/martinellis/nhl-game-data
