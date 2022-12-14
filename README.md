@@ -53,5 +53,5 @@ Forest 1 does a great job at accuractly predicting a player will not score a goa
 
 Link to data: https://www.kaggle.com/datasets/martinellis/nhl-game-data
 
-Link to RMarkdown: https://www.rpubs.com/jschwartz/983499
+Link to RMarkdown: https://rpubs.com/jschwartz/STAT172_FINAL_BOSTON_BRUINS
 
